@@ -38,11 +38,12 @@ Produce an evidence-led Chinese interview intelligence report from public source
 4. Execute the planned searches in priority order. Use English first. For each non-English country, also run at least one local-language company query and one local-language employee, salary, or interview query. Preserve the original language and an accessible URL for each adopted source.
 5. For each candidate page, open it and record the exact page type, publication date if visible, retrieval date, a short original-language excerpt, the claim it supports, and access limitations. A blocked or unavailable page cannot support a finding beyond the fact that it was inaccessible.
 6. Find interviewer material only when a name, public profile URL, or strong role/company context is supplied. Confirm identity through at least two compatible public attributes. A shared name alone is a disambiguation lead, never an identity confirmation.
-7. Build the research JSON described in [references/evidence-schema.md](references/evidence-schema.md). Use the report plan in [references/report-spec.md](references/report-spec.md) for required sections and the candidate preparation requirements.
+7. Build the research JSON described in [references/evidence-schema.md](references/evidence-schema.md). Use the report plan in [references/report-spec.md](references/report-spec.md) for required sections and the candidate preparation requirements. **Evaluate the optional opportunity score** using [references/scoring-rubric.md](references/scoring-rubric.md): after checking findings, assign 1–5 grades to only those fixed criteria supported by verified opened sources. Provide `reason` and `finding_ids` for each grade. Never invent missing ratings; do not grade a candidate's preferences without explicit user input. Company culture needs two independent origins, and salary competitiveness needs independent comparison sources. Missing context should lead to unscored criteria, not invented middle ratings.
 8. Validate and render:
 
    ```bash
    python3 scripts/interview_intel.py validate research.json
+   python3 scripts/interview_intel.py score research.json --output scores.json
    python3 scripts/interview_intel.py render research.json --output report.md
    ```
 
@@ -61,4 +62,4 @@ If only some sources fail, continue with reachable sources, record failed attemp
 
 ## Final response
 
-Return the rendered Chinese report, or save it to a user-specified file and provide a clickable link. Keep source URLs and trust labels in the report. State the search date, languages attempted, evidence limitations, and any unresolved identity or company matches. Simulated questions must be clearly labeled as predictions with their evidence basis.
+Return the rendered Chinese report, or save it to a user-specified file and provide a clickable link. Keep source URLs and trust labels in the report. Show the experimental weighted score only if its evidence threshold is met; otherwise preserve the scored dimensions, coverage and explicit missing grades. An index is not a factual company ranking or offer probability. State the search date, languages attempted, evidence limitations, and any unresolved identity or company matches. Simulated questions must be clearly labeled as predictions with their evidence basis.

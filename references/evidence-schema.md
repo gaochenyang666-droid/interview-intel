@@ -15,6 +15,7 @@ The renderer rejects unsupported factual claims. The schema is intentionally exp
   "market": {},
   "summary": {},
   "interview_prep": {},
+  "assessment": {"metrics": []},
   "sources_consulted": []
 }
 ```
@@ -166,3 +167,7 @@ Do not calculate a range when the source has no usable values. Keep currency, ti
 - `final_checklist`.
 
 The renderer labels all mock questions as predictions.
+
+## Optional evidence-driven opportunity score
+
+The optional `assessment.metrics` array contains 0–7 fixed ratings. Each item is `{ "key": "stability", "rating": 4, "reason": "可核查的评分说明", "finding_ids": ["F001"] }`. Every rating must use verified evidence-backed findings, and uses the published fixed weights. Empty metrics means no score. The CLI calculates the index using `score`; **do not provide manual overall or confidence values**. Missing factors are excluded and reported as unscored. Full anchors, source-independence requirements and calculation details: [scoring-rubric.md](scoring-rubric.md).

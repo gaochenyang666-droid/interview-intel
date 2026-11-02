@@ -198,6 +198,32 @@ python3 scripts/interview_intel.py catalog --country JP
 
 También puedes validar el [archivo de investigación de ejemplo](examples/research-us-software-engineer.json) sin efectuar búsquedas.
 
+## Nueva función: puntuación de oportunidades (experimental)
+
+Interview Intel incorpora un **índice de 0 a 100** para valorar una vacante concreta en relación con una persona candidata, siempre que existan pruebas suficientes.
+
+| Criterio | Peso |
+| --- | ---: |
+| Estabilidad empresarial | 15% |
+| Cultura de trabajo | 20% |
+| Claridad del puesto | 15% |
+| Desarrollo profesional | 15% |
+| Competitividad salarial | 10% |
+| Adecuación de competencias | 15% |
+| Preferencias de la persona candidata | 10% |
+
+El agente justifica una valoración del **1 al 5** para cada criterio. El cálculo usa pesos fijos y muestra por separado la empresa, el puesto, el ajuste personal, la cobertura de fuentes y su calidad. Los criterios sin evidencias permanecen **sin puntuar**. El índice global requiere al menos **80% de cobertura ponderada** y evidencia suficiente en las tres dimensiones.
+
+Es una evaluación contextual, **no una probabilidad de contratación ni una clasificación objetiva de empresas**.
+
+```bash
+python3 scripts/interview_intel.py validate research.json
+python3 scripts/interview_intel.py score research.json --output scores.json
+python3 scripts/interview_intel.py render research.json --output report.md
+```
+
+En el chat, pide al agente: «Valora esta oportunidad con la rúbrica basada en pruebas; deja sin puntuar lo que no pueda verificar». Consulta [la rúbrica completa](references/scoring-rubric.md).
+
 ## Alcance, fiabilidad y privacidad
 
 - El [catálogo de fuentes](references/source-catalog.json) y los [perfiles de país](references/country-profiles.json) orientan la investigación internacional. La cobertura real depende de los resultados accesibles.

@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import Any, Iterable
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
+from scoring import validate_assessment, render_score_lines
+
 
 ROOT = Path(__file__).resolve().parent.parent
 REFERENCES = ROOT / "references"
@@ -218,6 +220,7 @@ def normalize_request(request: dict[str, Any]) -> tuple[dict[str, Any], list[str
         "candidate": {
             "summary": _clean_optional(candidate.get("summary"), collapse=False),
             "skills": _clean_string_list(candidate.get("skills")),
+            "preferences": _clean_string_list(candidate.get("preferences")),
         },
         "focus": _clean_string_list(request.get("focus")),
         "research": {
@@ -499,6 +502,7 @@ def build_plan(request: dict[str, Any], max_queries: int | None = None, network_
             "final_checklist": [],
         },
         "sources_consulted": [],
+        "assessment": {"metrics": []},
     }
 
     return {
@@ -970,6 +974,7 @@ def validate_research(data: dict[str, Any], warnings_out: list[str] | None = Non
         if observations:
             issues.append(f"网络状态为 {network_status} 时不得输出薪酬观察")
 
+    validate_assessment(normalized_data, issues)
     if issues:
         raise IntelValidationError(issues)
     normalized_data["_validation_warnings"] = warnings
@@ -1061,6 +1066,7 @@ def render_report(data: dict[str, Any]) -> str:
         [
             "## 一页式摘要",
             "",
+            *render_score_lines(data),
             f"**公司判断**：{_md_text(summary.get('company_view'), '未找到可靠公开证据。')}",
             "",
             "**岗位机会**",

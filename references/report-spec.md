@@ -13,7 +13,7 @@ The renderer must always produce these sections in this order:
 ## Language and evidence style
 
 - Write in Simplified Chinese. Preserve a source title's original language in the source appendix.
-- Do not use an ungrounded 0 to 100 score.
+- Only use the optional, evidence-validated opportunity scoring rubric in [scoring-rubric.md](scoring-rubric.md). Insert the breakdown within the one-page summary. If evidence is missing or an identity is unconfirmed, withhold the overall score. Never present the result as an objective employer ranking or hiring probability.
 - Use `事实`, `本人公开表述`, `第三方评价`, `分析推断`, `面试预测`, `信息缺口`, and `准备建议` labels consistently.
 - Put evidence IDs next to every evidence-dependent bullet. Put clickable original URLs in the appendix.
 - Summaries must be traceable to finding IDs. Do not add facts in the summary that are absent from traceable findings.
@@ -39,3 +39,7 @@ Before presenting the report, confirm:
 - Source dates and sample limitations are honest.
 - Reposted material is not counted as independent corroboration.
 - Search snippets and inaccessible pages are not presented as verified facts.
+
+## Optional opportunity-scoring block
+
+Inside `一页式摘要`, a separate `### 面试机会评分` block displays an experimental opportunity index (only if eligible), dimension scores, coverage percentages, source-quality grades, fixed weights and finding citations. It does not create a seventh numbered report section. If ratings were not supplied, show `暂未评分`. The 0–100 values are weighted conversions of 1–5 coded judgments; they are not probabilities.

@@ -29,7 +29,8 @@ The CLI accepts UTF-8 JSON. Only `company.name` and `role.title` are required.
   ],
   "candidate": {
     "summary": "Eight years in B2B product; enterprise platform and API experience.",
-    "skills": ["product discovery", "platform strategy", "SQL"]
+    "skills": ["product discovery", "platform strategy", "SQL"],
+    "preferences": ["hybrid work", "learning opportunities"]
   },
   "focus": ["organization health", "system design", "salary negotiation"],
   "research": {
@@ -58,3 +59,5 @@ The CLI accepts UTF-8 JSON. Only `company.name` and `role.title` are required.
 - a ranked source shortlist;
 - network state and capability limits;
 - the required research JSON skeleton.
+
+- `candidate.preferences` is optional and is used only for the contextual preference-match score. If the user does not disclose preferences, this factor remains **unscored**. See [scoring-rubric.md](scoring-rubric.md).

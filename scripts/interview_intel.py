@@ -8,6 +8,8 @@ import json
 import sys
 from pathlib import Path
 
+from scoring import evaluate_assessment
+
 from intel_core import (
     IntelValidationError,
     PRODUCT_VERSION,
@@ -99,6 +101,15 @@ def cmd_render(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_score(args: argparse.Namespace) -> int:
+    """Inspect transparent scoring without rendering the whole report."""
+    data = _read_json(args.research)
+    normalized = validate_research(data)
+    result = evaluate_assessment(normalized)
+    _write_or_print(json.dumps(result, ensure_ascii=False, indent=2) + "\n", args.output)
+    return 0
+
+
 def cmd_catalog(args: argparse.Namespace) -> int:
     if args.raw:
         catalog = load_source_catalog()
@@ -141,6 +152,11 @@ def build_parser() -> argparse.ArgumentParser:
     render.add_argument("research", help="Completed research JSON")
     render.add_argument("--output", "-o")
     render.set_defaults(func=cmd_render)
+
+    score = subparsers.add_parser("score", help="Calculate evidence-driven opportunity scores")
+    score.add_argument("research", help="Completed research JSON with optional assessment.metrics")
+    score.add_argument("--output", "-o")
+    score.set_defaults(func=cmd_score)
 
     catalog = subparsers.add_parser("catalog", help="Inspect or route the candidate source catalog")
     catalog.add_argument("--country")

@@ -200,6 +200,43 @@ python3 scripts/interview_intel.py catalog --country JP
 
 想直接测试校验器，可以使用仓库内已有的 [Microsoft 示例研究数据](examples/research-us-software-engineer.json)，不必先联网搜集数据。
 
+## 新增：面试机会评分（试验功能）
+
+Interview Intel 可对**具体公司、岗位与候选人**进行有证据依据的机会评分，分数范围为 0 至 100。仅在证据满足门槛时显示综合分，信息不足会显示**未评分**。
+
+| 评分项目 | 权重 |
+| --- | ---: |
+| 公司经营与稳定性 | 15% |
+| 工作文化与环境 | 20% |
+| 岗位职责与透明度 | 15% |
+| 职业成长 | 15% |
+| 薪酬竞争力 | 10% |
+| 个人技能匹配 | 15% |
+| 个人偏好匹配 | 10% |
+
+每项按照有明确依据的 **1 至 5 档**评价，再映射为 0、25、50、75、100，并按固定权重计算。报告同时显示**公司、岗位、个人匹配**三个维度，以及**证据覆盖率、来源质量和引用依据**。缺失值留空。综合评分要求评分权重覆盖至少 **80%**、三个维度均满足最低证据门槛，并且不存在来源质量偏低的维度。文化评价需要独立员工体验来源，薪酬竞争力需要独立的薪资比较证据。
+
+此分数包含 Agent 根据事实作出的判断，**不能解释为面试通过率，也不能用于无条件比较不同国家的公司**。
+
+Agent 自然语言调用示例：
+
+```text
+使用 Interview Intel Skill 研究 [公司] 的 [岗位]。
+请按证据驱动评分规则评估这份工作机会，
+展示公司、岗位和个人匹配评分及可信程度。
+找不到可靠依据的指标直接显示“未评分”，不要猜测。
+```
+
+也可在研究 JSON 的可选 `assessment.metrics` 中填写带有证据 ID 的档位，然后执行：
+
+```bash
+python3 scripts/interview_intel.py validate research.json
+python3 scripts/interview_intel.py score research.json --output scores.json
+python3 scripts/interview_intel.py render research.json --output report.md
+```
+
+完整计算公式、评分档位和缺失数据处理见 [评分规则](references/scoring-rubric.md)。
+
 ## 全球覆盖与可信度
 
 - **全球研究：** 根据国家、岗位和语言动态选择企业官网、招聘平台、职业社交媒体与本地职场社区。数据源可在 [source-catalog.json](references/source-catalog.json) 中扩展。

@@ -4,6 +4,18 @@ All notable changes to Interview Intel are documented here.
 
 The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [Unreleased]
+
+### Added
+
+- Optional evidence-driven opportunity scoring: seven fixed metrics, weighted company/role/candidate-fit dimensions, source-quality labels and coverage-aware suppression.
+- `score` CLI command, transparent rubric documentation and scoring regression tests.
+- Optional candidate work preferences in normalized input for contextual fit scoring.
+
+### Notes
+
+- Missing or low-quality evidence never becomes a neutral or zero rating. This heuristic index is not a hiring probability or universal company ranking.
+
 ## [0.1.0-beta.1] - 2026-11-02
 
 ### Added
