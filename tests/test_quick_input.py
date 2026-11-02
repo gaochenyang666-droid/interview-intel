@@ -30,7 +30,7 @@ class QuickInputTests(unittest.TestCase):
         self.assertEqual(req["interviewers"], [])
         plan = build_plan(req)
         self.assertEqual(plan["country_code"], "CN")
-        self.assertIn("zh", plan["languages_planned"])
+        self.assertIn("zh-Hans", plan["languages_planned"])
         self.assertEqual(plan["request"]["interviewers"], [])
 
     def test_named_lines_and_missing_country(self):
@@ -55,7 +55,7 @@ class QuickInputTests(unittest.TestCase):
         categories = [q["category"] for q in plan["queries"]]
         self.assertIn("role_jobs", categories)
         self.assertNotIn("company_official", categories)
-        self.assertIn("zh", plan["languages_planned"])
+        self.assertIn("zh-Hans", plan["languages_planned"])
 
     def test_company_only(self):
         plan = build_plan(_quick_request(args("中国/字节跳动/0/0")))
