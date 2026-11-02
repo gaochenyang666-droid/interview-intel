@@ -1,0 +1,159 @@
+{
+  "version": "0.1.0",
+  "default": {
+    "name_zh": "未指定国家或地区",
+    "languages": ["en"],
+    "platforms": ["linkedin", "glassdoor", "indeed", "levels-fyi", "reddit", "x", "youtube", "github"],
+    "currency": null,
+    "notes": "Begin with global English sources. Infer a location only from strong supplied evidence; list multiple possible entities when the country remains unknown."
+  },
+  "countries": {
+    "US": {
+      "aliases": ["united states", "usa", "america", "美国"],
+      "languages": ["en"],
+      "platforms": ["glassdoor", "indeed", "blind", "fishbowl", "wellfound", "reddit", "levels-fyi", "linkedin"],
+      "currency": "USD",
+      "local_terms": ["employee reviews", "salary", "interview questions", "layoffs"]
+    },
+    "CA": {
+      "aliases": ["canada", "加拿大"],
+      "languages": ["en", "fr"],
+      "platforms": ["glassdoor", "indeed", "blind", "fishbowl", "wellfound", "reddit", "linkedin"],
+      "currency": "CAD",
+      "local_terms": ["avis des employés", "salaire", "entrevue"]
+    },
+    "GB": {
+      "aliases": ["united kingdom", "uk", "britain", "england", "英国"],
+      "languages": ["en"],
+      "platforms": ["glassdoor", "indeed", "linkedin", "reddit"],
+      "currency": "GBP",
+      "local_terms": ["employee reviews", "salary", "interview experience"]
+    },
+    "DE": {
+      "aliases": ["germany", "deutschland", "德国"],
+      "languages": ["de", "en"],
+      "platforms": ["kununu", "glassdoor", "linkedin", "stepstone"],
+      "currency": "EUR",
+      "local_terms": ["bewertungen", "gehalt", "vorstellungsgespräch", "entlassungen"]
+    },
+    "FR": {
+      "aliases": ["france", "法国"],
+      "languages": ["fr", "en"],
+      "platforms": ["glassdoor", "linkedin", "indeed", "welcometothejungle"],
+      "currency": "EUR",
+      "local_terms": ["avis salariés", "salaire", "entretien d'embauche", "licenciements"]
+    },
+    "ES": {
+      "aliases": ["spain", "españa", "西班牙"],
+      "languages": ["es", "en"],
+      "platforms": ["glassdoor", "infojobs", "linkedin", "indeed"],
+      "currency": "EUR",
+      "local_terms": ["opiniones de empleados", "salario", "entrevista"]
+    },
+    "NL": {
+      "aliases": ["netherlands", "holland", "荷兰"],
+      "languages": ["nl", "en"],
+      "platforms": ["glassdoor", "linkedin", "indeed", "reddit"],
+      "currency": "EUR",
+      "local_terms": ["werknemersbeoordelingen", "salaris", "sollicitatiegesprek"]
+    },
+    "JP": {
+      "aliases": ["japan", "日本"],
+      "languages": ["ja", "en"],
+      "platforms": ["openwork", "転職会議", "wantedly", "x", "note", "linkedin"],
+      "currency": "JPY",
+      "local_terms": ["口コミ", "年収", "面接", "面接体験", "評判"]
+    },
+    "KR": {
+      "aliases": ["south korea", "korea", "대한민국", "韩国", "韓國"],
+      "languages": ["ko", "en"],
+      "platforms": ["jobplanet", "saramin", "jobkorea", "blind-korea", "naver", "linkedin"],
+      "currency": "KRW",
+      "local_terms": ["기업리뷰", "연봉", "면접 후기", "채용"]
+    },
+    "CN": {
+      "aliases": ["china", "mainland china", "中国", "中國"],
+      "languages": ["zh-Hans", "en"],
+      "platforms": ["boss-zhipin", "zhaopin", "51job", "kanzhun", "maimai", "nowcoder", "zhihu", "xiaohongshu", "weibo"],
+      "currency": "CNY",
+      "local_terms": ["员工评价", "薪资", "面试经验", "裁员", "招聘"]
+    },
+    "IN": {
+      "aliases": ["india", "印度"],
+      "languages": ["en", "hi"],
+      "platforms": ["naukri", "ambitionbox", "linkedin", "reddit"],
+      "currency": "INR",
+      "local_terms": ["कर्मचारी समीक्षा", "वेतन", "साक्षात्कार"]
+    },
+    "AU": {
+      "aliases": ["australia", "澳大利亚"],
+      "languages": ["en"],
+      "platforms": ["seek", "glassdoor", "linkedin", "reddit"],
+      "currency": "AUD",
+      "local_terms": ["employee reviews", "salary", "interview experience"]
+    },
+    "NZ": {
+      "aliases": ["new zealand", "新西兰"],
+      "languages": ["en", "mi"],
+      "platforms": ["seek", "glassdoor", "linkedin", "reddit"],
+      "currency": "NZD",
+      "local_terms": ["employee reviews", "salary", "interview"]
+    },
+    "SG": {
+      "aliases": ["singapore", "新加坡"],
+      "languages": ["en", "zh-Hans", "ms"],
+      "platforms": ["jobstreet", "jobsdb", "linkedin", "glassdoor"],
+      "currency": "SGD",
+      "local_terms": ["employee reviews", "salary", "interview"]
+    },
+    "MY": {
+      "aliases": ["malaysia", "马来西亚"],
+      "languages": ["en", "ms", "zh-Hans"],
+      "platforms": ["jobstreet", "jobsdb", "linkedin"],
+      "currency": "MYR",
+      "local_terms": ["ulasan pekerja", "gaji", "temu duga"]
+    },
+    "ID": {
+      "aliases": ["indonesia", "印度尼西亚"],
+      "languages": ["id", "en"],
+      "platforms": ["jobstreet", "linkedin", "glassdoor"],
+      "currency": "IDR",
+      "local_terms": ["ulasan karyawan", "gaji", "wawancara"]
+    },
+    "TH": {
+      "aliases": ["thailand", "泰国"],
+      "languages": ["th", "en"],
+      "platforms": ["jobsdb", "linkedin", "glassdoor"],
+      "currency": "THB",
+      "local_terms": ["รีวิวพนักงาน", "เงินเดือน", "สัมภาษณ์"]
+    },
+    "PH": {
+      "aliases": ["philippines", "菲律宾"],
+      "languages": ["en", "tl"],
+      "platforms": ["jobstreet", "linkedin", "glassdoor", "facebook"],
+      "currency": "PHP",
+      "local_terms": ["employee reviews", "salary", "interview", "review ng empleyado"]
+    },
+    "VN": {
+      "aliases": ["vietnam", "越南"],
+      "languages": ["vi", "en"],
+      "platforms": ["jobstreet", "linkedin", "facebook"],
+      "currency": "VND",
+      "local_terms": ["đánh giá nhân viên", "lương", "phỏng vấn"]
+    },
+    "BR": {
+      "aliases": ["brazil", "brasil", "巴西"],
+      "languages": ["pt-BR", "en"],
+      "platforms": ["linkedin", "indeed", "glassdoor", "infojobs"],
+      "currency": "BRL",
+      "local_terms": ["avaliações de funcionários", "salário", "entrevista", "demissões"]
+    },
+    "MX": {
+      "aliases": ["mexico", "méxico", "墨西哥"],
+      "languages": ["es", "en"],
+      "platforms": ["linkedin", "indeed", "glassdoor", "infojobs"],
+      "currency": "MXN",
+      "local_terms": ["opiniones de empleados", "salario", "entrevista"]
+    }
+  }
+}

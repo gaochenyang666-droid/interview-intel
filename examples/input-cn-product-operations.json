@@ -1,0 +1,23 @@
+{
+  "company": {
+    "name": "示例科技有限公司",
+    "website": "https://example.cn/",
+    "industry": "Internet services"
+  },
+  "role": {
+    "title": "产品运营"
+  },
+  "location": {
+    "country": "CN",
+    "city": "上海"
+  },
+  "candidate": {
+    "summary": "Growth operations background with user research and data analysis experience.",
+    "skills": ["user growth", "SQL", "experiment analysis"]
+  },
+  "focus": ["面试流程", "业务指标", "团队协作"],
+  "research": {
+    "max_queries": 14,
+    "languages": ["zh-Hans", "en"]
+  }
+}

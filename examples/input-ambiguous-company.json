@@ -1,0 +1,14 @@
+{
+  "company": {
+    "name": "Mercury"
+  },
+  "role": {
+    "title": "Product Designer"
+  },
+  "candidate": {
+    "summary": "Product designer with fintech onboarding experience."
+  },
+  "research": {
+    "max_queries": 12
+  }
+}

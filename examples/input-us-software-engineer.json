@@ -1,0 +1,26 @@
+{
+  "company": {
+    "name": "Microsoft",
+    "website": "https://www.microsoft.com/",
+    "industry": "Cloud computing and enterprise software"
+  },
+  "role": {
+    "title": "Software Engineer II",
+    "level": "Mid-level",
+    "url": "https://apply.careers.microsoft.com/careers?query=Software+Engineer+II&start=0&location=Redmond%2C+Washington%2C+United+States&pid=1970393556999242&sort_by=timestamp"
+  },
+  "location": {
+    "country": "US",
+    "city": "Redmond"
+  },
+  "interviewers": [],
+  "candidate": {
+    "summary": "Backend engineer with distributed systems and cloud service experience.",
+    "skills": ["distributed systems", "C#", "Azure", "testing"]
+  },
+  "focus": ["coding interview", "system design", "team culture"],
+  "research": {
+    "max_queries": 18,
+    "languages": ["en"]
+  }
+}

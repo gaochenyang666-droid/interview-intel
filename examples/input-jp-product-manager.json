@@ -1,0 +1,24 @@
+{
+  "company": {
+    "name": "Sony Group Corporation",
+    "website": "https://www.sony.com/",
+    "industry": "Consumer electronics, gaming, and entertainment"
+  },
+  "role": {
+    "title": "Product Manager",
+    "level": "Mid-level"
+  },
+  "location": {
+    "country": "JP",
+    "city": "Tokyo"
+  },
+  "candidate": {
+    "summary": "Product manager with consumer software and cross-functional delivery experience.",
+    "skills": ["product discovery", "analytics", "stakeholder management"]
+  },
+  "focus": ["local interview format", "product sense", "team culture"],
+  "research": {
+    "max_queries": 18,
+    "languages": ["ja", "en"]
+  }
+}
