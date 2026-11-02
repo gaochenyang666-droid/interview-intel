@@ -1,0 +1,52 @@
+name: Publish v0.2.0-beta.1 prerelease
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-v0.2.0-beta.1.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-v0.2.0-beta.1
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out release commit
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run release checks
+        run: |
+          python -m unittest discover -s tests -v
+          python scripts/interview_intel.py validate examples/research-us-software-engineer.json
+          python scripts/interview_intel.py render examples/research-us-software-engineer.json --output rendered-example.md
+          test -s rendered-example.md
+
+      - name: Extract release notes from changelog
+        run: |
+          awk '/^## \\[0\\.2\\.0-beta\\.1\\]/{capture=1;next} /^## \\[/{if(capture)exit} capture{print}' CHANGELOG.md > release-notes.md
+          test -s release-notes.md
+
+      - name: Publish GitHub prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v0.2.0-beta.1 >/dev/null 2>&1; then
+            echo "v0.2.0-beta.1 is already published"
+            exit 0
+          fi
+          gh release create v0.2.0-beta.1 \
+            --target "$GITHUB_SHA" \
+            --title "Interview Intel v0.2.0-beta.1" \
+            --notes-file release-notes.md \
+            --prerelease
