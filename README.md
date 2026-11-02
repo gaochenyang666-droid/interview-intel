@@ -10,6 +10,29 @@ Interview Intel is an installable Agent Skill for researching an employer and ro
 
 > Latest prerelease: **[v0.2.0-beta.1](https://github.com/gaochenyang666-droid/interview-intel/releases/tag/v0.2.0-beta.1)** (2026-11-02). Live research uses the host agent's public web search and browser tools. The Python utilities plan searches, validate evidence, generate questions, persist interview state, and render reports. They do not crawl the web by themselves.
 
+## End-to-end workflow
+
+The full workflow runs from a three-field request to an evidence-backed report, interactive interview practice, and actionable feedback:
+
+```mermaid
+flowchart TD
+    A["① Enter country, company, role<br/>输入国家、公司、岗位"]
+    B["② Employer research<br/>背景、员工评价、薪资、岗位"]
+    C["③ Historical interview research<br/>公开原帖、面试问题、流程"]
+    D["④ Six-section Chinese report<br/>证据分级、十道题、原始来源"]
+    E["⑤ Interactive mock interview<br/>逐题提问、动态追问、调整难度"]
+    F["⑥ Session review<br/>表现分析、改进建议、重练题目"]
+
+    A --> B
+    A --> C
+    B --> D
+    C --> D
+    D --> E
+    E --> F
+```
+
+The employer and interview research tracks can run in parallel. If the company is unknown, company-specific research is skipped; starting a mock interview requires a role. Live findings and historical questions depend on accessible, verified public sources.
+
 ## What's new in v0.2.0-beta.1
 
 This beta expands Interview Intel from employer research into **evidence-labelled interview preparation and interactive mock interviews**:
