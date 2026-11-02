@@ -11,7 +11,6 @@ The renderer rejects unsupported factual claims. The schema is intentionally exp
   "research": {},
   "evidence": [],
   "findings": [],
-  "interviewers": [],
   "market": {},
   "summary": {},
   "interview_prep": {},
@@ -114,7 +113,7 @@ Each finding has:
 ```json
 {
   "id": "F001",
-  "section": "company|reviews|role|interviewer|prep",
+  "section": "company|reviews|role|prep",
   "kind": "fact",
   "statement": "简体中文结论",
   "evidence_ids": ["E001"],
@@ -126,28 +125,9 @@ Each finding has:
 
 High confidence requires at least one verified `official`, `official_filing`, `job_posting`, or profile-authored `first_party` source. Medium confidence requires a verified credible secondary source or at least two independent origins. Low confidence covers anonymous reviews, single social posts, and snippet-only evidence. The CLI calculates the maximum allowed confidence and rejects unsupported claims.
 
-## Interviewers
+## Legacy compatibility
 
-```json
-{
-  "id": "P001",
-  "display_name": "Public Name",
-  "identity_status": "confirmed|probable|unconfirmed|not_found",
-  "match_confidence": "high|medium|low",
-  "matching_basis": ["shared role", "current employer", "supplied profile URL"],
-  "public_role": "Director of Product",
-  "evidence_ids": ["E010"],
-  "career": [],
-  "professional_focus": [],
-  "public_hiring_signals": [],
-  "possible_interview_topics": [],
-  "gaps": []
-}
-```
-
-For `unconfirmed` or `not_found`, leave `career`, `professional_focus`, and `public_hiring_signals` empty. Only generic role-based preparation may remain. Never claim that a namesake is the interviewer.
-
-For `confirmed`, at least two independent eligible evidence origins and at least two compatible matching attributes are required. `probable` may use one eligible source but still requires two matching attributes.
+Older research JSON files may contain `interviewers` or findings with `section: "interviewer"`. The validator retains safety checks for legacy records, but new plans do not collect personal interviewer data, and reports do not render interviewer profiles.
 
 ## Market data
 
@@ -180,7 +160,7 @@ Do not calculate a range when the source has no usable values. Keep currency, ti
 
 ## One-page summary and preparation
 
-`summary` contains `company_view`, `opportunity_finding_ids`, `risk_finding_ids`, `interviewer_note`, `top_topics`, and `unresolved_questions`.
+`summary` contains `company_view`, `opportunity_finding_ids`, `risk_finding_ids`, `top_topics`, and `unresolved_questions`.
 
 `interview_prep` contains:
 

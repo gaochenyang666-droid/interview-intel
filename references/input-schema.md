@@ -1,6 +1,6 @@
 # Input schema
 
-The CLI accepts UTF-8 JSON. For quick natural-language or CLI input, use **country / company / role / interviewer**, with `0` for unknowns. At least one of company, role or interviewer must be provided. The country may be `0` for global research. The advanced JSON interface remains available.
+The CLI accepts UTF-8 JSON. The standard chat and CLI interface uses **country / company / role**, with `0` for unknowns. At least one of company or role must be provided; country `0` means global research. Advanced JSON remains supported, but interviewer profiling is retired.
 
 ```json
 {
@@ -19,14 +19,6 @@ The CLI accepts UTF-8 JSON. For quick natural-language or CLI input, use **count
     "country": "US",
     "city": "Seattle"
   },
-  "interviewers": [
-    {
-      "name": "Public Name",
-      "title": "Director of Product",
-      "department": "Platform",
-      "profile_url": "https://www.linkedin.com/in/example"
-    }
-  ],
   "candidate": {
     "summary": "Eight years in B2B product; enterprise platform and API experience.",
     "skills": ["product discovery", "platform strategy", "SQL"],
@@ -43,24 +35,23 @@ The CLI accepts UTF-8 JSON. For quick natural-language or CLI input, use **count
 
 ## Quick input
 
-Four lines work directly in an Agent chat:
+Three lines work directly in an Agent chat:
 
 ```text
 国家：中国
 公司：字节跳动
 岗位：产品运营
-面试官：0
 ```
 
 The Agent automatically skips any field containing `0`. Use the CLI to create a normalized JSON request:
 
 ```bash
-python3 scripts/interview_intel.py quick "中国/字节跳动/产品运营/0" --output request.json
+python3 scripts/interview_intel.py quick "中国/字节跳动/产品运营" --output request.json
 ```
 
-Alternatively use `quick --country CN --company 字节跳动 --role 产品运营 --interviewer 0 --output request.json`; or supply four named lines as a quoted input string. `quick --plan` emits the corresponding research plan. This CLI does not make network requests; the Agent performs live research after planning.
+Alternatively use `quick --country CN --company 字节跳动 --role 产品运营 --output request.json`; or supply three named lines as a quoted input string. `quick --plan` emits the corresponding research plan. This CLI does not make network requests; the Agent performs live research after planning.
 
-For partial requests: if company is `0`, company conclusions are skipped; if role is `0`, job analysis and mock questions are skipped; if interviewer is `0`, professional-person research is skipped. Country `0` triggers a global search. An all-zero request has no research subject and is rejected. Optional candidate background and personal preferences never block research or company/role-level scoring.
+For partial requests: company `0` skips company conclusions; role `0` skips job analysis and mock questions; country `0` triggers global research. If both company and role are `0`, the request is rejected. Optional candidate background and personal preferences never block research or company/role-level scoring.
 
 ## Field behavior
 
@@ -68,7 +59,7 @@ For partial requests: if company is `0`, company conclusions are skipped; if rol
 - `location.country` accepts a two-letter ISO-style code, English country name, or common Chinese name. Unknown values produce a warning and fall back to global English research.
 - `research.languages` adds languages to the country route. The planner still runs English first.
 - `candidate.summary` must contain role-relevant information only. The tool does not log or persist it separately.
-- Interviewer names are identity leads. A name alone never establishes an identity.
+- Interviewer names are not requested or researched. Legacy input fields are ignored by the active planning workflow.
 
 ## Research plan output
 

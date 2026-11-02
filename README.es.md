@@ -6,11 +6,11 @@
 
 [![Pruebas](https://github.com/gaochenyang666-droid/interview-intel/actions/workflows/test.yml/badge.svg)](https://github.com/gaochenyang666-droid/interview-intel/actions/workflows/test.yml) · [Versión beta](https://github.com/gaochenyang666-droid/interview-intel/releases/tag/v0.1.0-beta.1) · [Licencia MIT](LICENSE)
 
-**Interview Intel** es una habilidad instalable para agentes de IA (Agent Skill) que investiga empresas, puestos de trabajo, señales salariales, opiniones laborales, procesos de selección y los antecedentes **profesionales públicos** de responsables de selección o entrevistadores. El resultado es un **informe en chino simplificado**, con enlaces a las fuentes, niveles de confianza y limitaciones explícitas.
+**Interview Intel** es una habilidad instalable para agentes de IA (Agent Skill) que investiga empresas, puestos de trabajo, señales salariales, opiniones laborales, procesos de selección . El resultado es un **informe en chino simplificado**, con enlaces a las fuentes, niveles de confianza y limitaciones explícitas.
 
 > **Estado: beta pública v0.1.0-beta.1.** El agente anfitrión realiza las búsquedas y consulta las páginas públicas. Los scripts de Python generan planes, validan pruebas y redactan el informe; **no rastrean sitios web por sí solos**.
 
-## Inicio rápido: solo cuatro datos
+## Inicio rápido: solo tres datos
 
 Escribe estos cuatro campos en cualquier agente compatible:
 
@@ -18,13 +18,12 @@ Escribe estos cuatro campos en cualquier agente compatible:
 País: China
 Empresa: ByteDance
 Puesto: Product Operations
-Entrevistador: 0
 ```
 
-**Escribe `0` cuando desconozcas un dato.** El agente lo omite automáticamente: país desconocido implica búsqueda global; sin empresa se investiga el puesto o la persona; sin puesto se estudia la empresa o la persona; sin entrevistador se omite la investigación personal. No se requiere CV, oferta, experiencia ni preferencias. **Se necesita al menos una empresa, un puesto o un entrevistador.** La ausencia de datos personales deja la adecuación del candidato **sin puntuar**.
+**Escribe `0` cuando desconozcas un dato.** País `0`: búsqueda global; empresa `0`: investigación general del puesto; puesto `0`: investigación de la empresa. Es suficiente indicar empresa o puesto. No se requiere CV ni información personal. La puntuación numérica está desactivada por defecto.
 
 ```bash
-python3 scripts/interview_intel.py quick "China/ByteDance/Product Operations/0" --output request.json
+python3 scripts/interview_intel.py quick "China/ByteDance/Product Operations" --output request.json
 ```
 
 El comando solo genera los datos de entrada. Después, el agente realiza la investigación web.
@@ -140,12 +139,11 @@ Empresa: Microsoft
 Puesto: Software Engineer II
 Lugar: Redmond, Estados Unidos
 Enlace a la oferta: [opcional]
-Entrevistador: [nombre, cargo y perfil profesional público, opcional]
 Experiencia: C#, sistemas distribuidos, Azure
 Prioridades: entrevista técnica, equipo, salario
 ```
 
-**Basta con indicar empresa, puesto o entrevistador.** Actualmente, el informe final se genera en **chino simplificado**.
+**Basta con indicar empresa o puesto.** Actualmente, el informe final se genera en **chino simplificado**.
 
 **Documentación de plataformas:** [Codex](https://learn.chatgpt.com/docs/build-skills) · [Claude Code](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) · [Gemini CLI](https://geminicli.com/docs/cli/skills/) · [Cursor](https://cursor.com/docs/skills) · [Copilot](https://docs.github.com/en/copilot/concepts/customizations/agent-skills) · [OpenCode](https://opencode.ai/docs/skills) · [Windsurf / Devin Desktop](https://docs.devinai.cn/desktop/cascade/skills)
 
@@ -159,15 +157,6 @@ Consulta primero las ofertas oficiales y después las comunidades japonesas.
 Entrega un informe con fuentes, limitaciones y preguntas de práctica.
 ```
 
-**Analizar a un entrevistador identificado:**
-
-```text
-Usa la habilidad Interview Intel. Empresa: [empresa]. Puesto: [puesto].
-Entrevistador: [nombre, cargo y URL de perfil profesional público].
-Confirma su identidad antes de atribuirle experiencia o publicaciones.
-Extrae temas profesionales relevantes y distingue predicciones de hechos.
-```
-
 **Contrastar opiniones contradictorias:**
 
 ```text
@@ -178,16 +167,15 @@ Separa hechos, experiencias anónimas, inferencias y lagunas de información.
 
 ## ¿Qué contiene el informe?
 
-El informe se genera actualmente en **Markdown y chino simplificado**. Incluye un resumen ejecutivo y seis apartados:
+El informe se genera actualmente en **Markdown y chino simplificado**. Incluye un resumen ejecutivo y cinco apartados:
 
 1. Presentación y evaluación de la empresa.
 2. Opiniones de empleados y redes sociales.
 3. Análisis del puesto, remuneración y riesgos.
-4. Información profesional pública sobre RR. HH. y entrevistadores.
-5. Predicciones de entrevista y plan de preparación.
-6. Fuentes originales, confianza y datos pendientes de verificar.
+4. Predicciones de entrevista y plan de preparación.
+5. Fuentes originales, confianza y datos pendientes de verificar.
 
-Los hallazgos distinguen hechos verificados, declaraciones de primera mano, opiniones de terceros, inferencias, predicciones y ausencia de pruebas. Se conservan los enlaces originales y las fechas disponibles. Si la identidad de una persona es ambigua, el sistema evita atribuirle datos.
+Los hallazgos distinguen hechos verificados, declaraciones de primera mano, opiniones de terceros, inferencias, predicciones y ausencia de pruebas. Se conservan los enlaces originales y las fechas disponibles.
 
 **[Ver informe de ejemplo: Microsoft Software Engineer II](examples/report-us-software-engineer.md)** · [Esquema de entrada](references/input-schema.md) · [Reglas de evidencia](references/evidence-schema.md) · [Formato del informe](references/report-spec.md)
 

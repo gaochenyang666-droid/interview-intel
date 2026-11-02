@@ -1,14 +1,13 @@
 # Chinese report specification
 
-For the legacy/complete input, the renderer keeps the following sections in order. For `quick_mode: true`, numbered sections that depend on a skipped `0` field are omitted: no company skips company/reviews, no role skips role/preparation, and no interviewer skips interviewer information. The summary and source section remain.
+Reports contain a one-page summary and five numbered sections. When a quick input contains `0`, dependent company or role sections are skipped. **Individual interviewer profiling is not part of the current report.** Previous stored person fields are not rendered.
 
 1. `一页式摘要`
 2. `1. 公司概况与综合评价`
 3. `2. 员工及社交媒体评价`
 4. `3. 岗位评价`
-5. `4. HR / 面试官公开情报`
-6. `5. 面试预测与准备`
-7. `6. 来源与可信度`
+5. `4. 面试预测与准备`
+6. `5. 来源与可信度`
 
 ## Language and evidence style
 
@@ -39,7 +38,7 @@ If no public original review can be opened, write `未核验到可公开访问�
 Before presenting the report, confirm:
 
 - Company identity is confirmed or clearly marked unresolved.
-- An unconfirmed interviewer has no attributed career details.
+- No individual interviewer identities, biographies or inferred preferences appear in the report.
 - Each fact-like conclusion has an eligible evidence record.
 - Every URL came from an actually inspected page or a user-provided public URL.
 - Source dates and sample limitations are honest.

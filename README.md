@@ -6,27 +6,26 @@
 
 [![Tests](https://github.com/gaochenyang666-droid/interview-intel/actions/workflows/test.yml/badge.svg)](https://github.com/gaochenyang666-droid/interview-intel/actions/workflows/test.yml) · [Latest beta release](https://github.com/gaochenyang666-droid/interview-intel/releases/tag/v0.1.0-beta.1) · [MIT License](LICENSE)
 
-Prepare for an interview with more context than a job description. **Interview Intel** is an installable Agent Skill that researches an employer, a specific role, public workplace discussions, compensation signals, interview processes, and the verified *professional* background of a named interviewer or HR contact. It produces a **source-linked report in Simplified Chinese** with explicit confidence and evidence limitations.
+Prepare for an interview with more context than a job description. **Interview Intel** is an installable Agent Skill that researches an employer, a specific role, public workplace discussions, compensation signals, interview processes, . It produces a **source-linked report in Simplified Chinese** with explicit confidence and evidence limitations.
 
 > **Public beta: v0.1.0-beta.1.** The Skill uses the **host agent's web search/browser tools** for live research. The included Python scripts plan queries, validate evidence, and render reports; they **do not independently crawl websites**.
 
-## Quick start: just four fields
+## Quick start: just three fields
 
-Paste these four lines into any supported Agent with Interview Intel installed:
+Paste these three lines into any supported Agent with Interview Intel installed:
 
 ```text
 Country: China
 Company: ByteDance
 Role: Product Operations
-Interviewer: 0
 ```
 
-**Use `0` for any unknown field.** The Agent automatically skips it. Country `0` means global search; company `0` means general role/interviewer research; role `0` means company/interviewer research; interviewer `0` skips person research. No résumé, job URL, skills or preferences are required to start. **At least one of company, role or interviewer must be supplied.** Missing candidate details leave personal-fit ratings unscored.
+**Use `0` for any unknown field.** Country `0` means global search; company `0` means role-level research; role `0` means employer research. At least one of company or role is required. No résumé, job link or personal profile is needed. Numeric scoring is off by default.
 
 For CLI users:
 
 ```bash
-python3 scripts/interview_intel.py quick "China/ByteDance/Product Operations/0" --output request.json
+python3 scripts/interview_intel.py quick "China/ByteDance/Product Operations" --output request.json
 ```
 
 The Agent then performs the web research and generates the report. This command only builds the input JSON.
@@ -38,7 +37,6 @@ The Agent then performs the web research and generates the report. This command 
 | Is this company worth considering? | Official company facts, business context, workplace feedback, recent hiring signals, and disagreements across sources. |
 | What is this job really asking for? | Verified job description, responsibilities, skill gaps, compensation observations, role and location differences. |
 | How do employees describe the workplace? | Public employee reviews and social discussions with dates, sampling caveats, and source independence checks. |
-| What do we know about the interviewer? | Identity-checked professional history, published work, and stated hiring criteria, where publicly available. |
 | How should I prepare? | A targeted preparation plan, follow-up questions, and **10 labeled practice questions** tied to available evidence. |
 
 Search begins in **English** and adds the relevant **local language**. A country-aware source catalog includes candidates such as LinkedIn, Indeed, Glassdoor, Reddit, Blind, 牛客, 脉脉, OpenWork, JobPlanet, Naukri, SEEK and regional job boards. **Listing a platform does not imply unrestricted access or verified content.**
@@ -144,33 +142,22 @@ Company: Microsoft
 Role: Software Engineer II
 Location: Redmond, Washington, United States
 Job URL: [optional public job posting]
-Interviewer: [optional name, position and public professional profile]
 My background: C#, distributed systems, Azure, testing
 Focus: interview process, team culture, system design and compensation
 ```
 
-**Only one of company, role or interviewer is required.** Country, job URL, named interviewer, interview stage and candidate experience are optional. The current report renderer outputs **Simplified Chinese**, regardless of the language of these installation instructions.
+**At least company or role is required.** Country, job URL, interview stage and candidate experience are optional. The current report renderer outputs **Simplified Chinese**, regardless of the language of these installation instructions.
 
 **Official setup references:** [Codex](https://learn.chatgpt.com/docs/build-skills) · [Claude Code](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) · [Gemini CLI](https://geminicli.com/docs/cli/skills/) · [Cursor](https://cursor.com/docs/skills) · [Copilot](https://docs.github.com/en/copilot/concepts/customizations/agent-skills) · [OpenCode](https://opencode.ai/docs/skills) · [Windsurf / Devin Desktop](https://docs.devinai.cn/desktop/cascade/skills)
 
 ## Usage examples
 
-**Explore an employer and role (no interviewer provided):**
+**Explore an employer and role:**
 
 ```text
 Use $interview-intel. Company: Toyota. Role: Product Manager.
 Country: Japan. Search Japanese workplace and job sources, compare
 the responsibilities with the official listing, and output the cited Chinese report.
-```
-
-**Prepare for a named interviewer:**
-
-```text
-Use $interview-intel. Company: [company]. Role: [position].
-Interviewer: [full name, job title, public profile link].
-Verify the identity before attributing career information.
-Summarize publicly expressed professional interests and prepare
-role-specific questions. Mark all interview-question forecasts as predictions.
 ```
 
 **Evaluate competing evidence:**
@@ -183,16 +170,15 @@ reviews. Distinguish first-hand claims, anonymous opinions and unknowns.
 
 ## What the finished report looks like
 
-The output is a **Simplified Chinese Markdown report**, with a one-page summary followed by six numbered sections:
+The output is a **Simplified Chinese Markdown report**, with a one-page summary followed by five numbered sections:
 
 1. Company background and assessment
 2. Employee and social-media perspectives
 3. Role, responsibilities, compensation and risks
-4. Public HR/interviewer professional intelligence
-5. Interview predictions and preparation
-6. Sources, confidence and unresolved gaps
+4. Interview predictions and preparation
+5. Sources, confidence and unresolved gaps
 
-Findings are identified as verified facts, first-person statements, third-party opinions, analysis, predictions, or missing information. Important findings cite inspected public pages, original URLs and available dates. When the company or interviewer cannot be identified reliably, the report limits attribution rather than guessing.
+Findings are identified as verified facts, first-person statements, third-party opinions, analysis, predictions, or missing information. Important findings cite inspected public pages, original URLs and available dates. If the company cannot be identified reliably, its details are withheld rather than guessed.
 
 **[Read a complete sample: Microsoft Software Engineer II](examples/report-us-software-engineer.md)** · [Input format](references/input-schema.md) · [Evidence format](references/evidence-schema.md) · [Report specification](references/report-spec.md)
 
@@ -236,7 +222,6 @@ The report lists **platforms actually attempted**, links to publicly accessible 
 
 - **Global discovery:** country profiles and a modifiable [source catalog](references/source-catalog.json) route searches toward official sites, job boards, professional profiles, public communities and employer-review sites.
 - **Evidence first:** search snippets and blocked pages are leads, not verified evidence. Reposts with one origin do not count as independent corroboration.
-- **Interviewer identity:** a shared name is insufficient; public, compatible attributes and independent sources are required. Professional background does not prove participation in your interview or personal scoring preferences.
 - **Privacy:** no login/CAPTCHA bypass, private-contact harvesting or unrelated sensitive personal profiling. Do not submit private resumes, passwords or restricted pages.
 - **Honest failure:** inaccessible platforms, unmatched positions and missing evidence are reported as limitations. With no search tool, the Skill can provide a plan but not a live company research report.
 
@@ -249,6 +234,6 @@ python3 -m unittest discover -s tests -v
 python3 scripts/interview_intel.py validate examples/research-us-software-engineer.json
 ```
 
-Contributions and corrections are welcome through [Issues](https://github.com/gaochenyang666-droid/interview-intel/issues) and pull requests. Please do not publish candidate personal data, private interviewer details or copied login-gated content. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions and corrections are welcome through [Issues](https://github.com/gaochenyang666-droid/interview-intel/issues) and pull requests. Please do not publish candidate personal data, private personal details or copied login-gated content. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 **License:** [MIT](LICENSE).

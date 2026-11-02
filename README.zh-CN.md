@@ -1,16 +1,16 @@
 # Interview Intel
 
-**全球面试情报 Skill：查公司、查岗位、研究公开职业背景，带着证据准备面试。**
+**全球面试情报 Skill：查公司、查岗位、看公开员工评价，带着证据准备面试。**
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [Español](README.es.md) · [Русский](README.ru.md)
 
 [![自动测试](https://github.com/gaochenyang666-droid/interview-intel/actions/workflows/test.yml/badge.svg)](https://github.com/gaochenyang666-droid/interview-intel/actions/workflows/test.yml) · [Beta 版本](https://github.com/gaochenyang666-droid/interview-intel/releases/tag/v0.1.0-beta.1) · [MIT 许可证](LICENSE)
 
-Interview Intel 是一个可以安装到 AI Agent 的面试研究技能。只需输入**公司、岗位或面试官中的至少一项**，Agent 就能检索企业官方资料、招聘页面、员工评价、职业社区、薪酬线索与公开面经，并根据可验证的职业资料研究指定 HR 或面试官，最终生成**带原始链接和可信度说明的中文报告**。
+Interview Intel 是一个可以安装到 AI Agent 的面试研究技能。只需输入**公司或岗位中的至少一项**，Agent 就能检索企业官方资料、招聘页面、员工评价、职业社区、薪酬线索与公开面经，最终生成**带原始链接和可信度说明的中文报告**。
 
 > **当前版本：v0.1.0-beta.1（公开测试版）。** 联网搜索由宿主 Agent 的搜索或浏览器工具完成；仓库中的 Python 脚本负责生成检索计划、校验证据、去重与渲染报告，**脚本本身不会自动抓取网页**。
 
-## 最简单的使用方法：只填四项
+## 最简单的使用方法：只填三项
 
 在已安装 Interview Intel 的 AI Agent 中直接输入：
 
@@ -18,17 +18,16 @@ Interview Intel 是一个可以安装到 AI Agent 的面试研究技能。只需
 国家：中国
 公司：字节跳动
 岗位：产品运营
-面试官：0
 ```
 
-**不知道就填 `0`，自动跳过对应信息。** 国家为 `0` 时开展全球搜索；公司为 `0` 时研究通用岗位或面试官；岗位为 `0` 时仅研究公司或面试官；面试官为 `0` 时跳过个人研究。无需额外填写简历、JD、个人背景、技能或偏好。**公司、岗位、面试官至少提供一项**，四项全为 `0` 无法启动研究。
+**不知道就填 `0`，自动跳过。** 国家为 `0` 时全球搜索；公司为 `0` 时研究岗位；岗位为 `0` 时研究公司。无需填写简历、JD、个人背景或联系人。**公司和岗位至少提供一项**，不能全部填写 `0`。
 
 评分默认关闭，`0` 只表示未知或跳过该项资料。
 
-命令行同样支持四字段快捷输入：
+命令行也支持三字段快捷输入：
 
 ```bash
-python3 scripts/interview_intel.py quick "中国/字节跳动/产品运营/0" --output request.json
+python3 scripts/interview_intel.py quick "中国/字节跳动/产品运营" --output request.json
 ```
 
 随后由 Agent 执行联网研究并生成报告。上述命令仅创建输入 JSON。
@@ -40,7 +39,6 @@ python3 scripts/interview_intel.py quick "中国/字节跳动/产品运营/0" --
 | 这家公司值得去吗？ | 公司背景、业务与招聘动态、员工反馈、不同来源之间的分歧。 |
 | 岗位实际做什么？ | 官方 JD、主要职责、技能要求、薪酬观察、地区与职级差异。 |
 | 工作环境怎么样？ | 公开员工评价和社交平台讨论，注明时间、样本限制及来源可信度。 |
-| 面试官可能关注什么？ | 已确认身份的公开职业履历、专业文章与明确表达的招聘标准。 |
 | 应该怎么准备？ | 针对性准备清单、反问问题及 **10 道标注预测依据的模拟面试题**。 |
 
 研究先使用**英文**查询，再使用目标国家的**本地语言**查询。候选来源包括 LinkedIn、Indeed、Glassdoor、Reddit、Blind、牛客、脉脉、OpenWork、JobPlanet、Naukri、SEEK 等。部分平台需要登录或有访问限制，列入目录不代表可以读取其全部内容。
@@ -144,12 +142,11 @@ mkdir -p ~/.zcode/skills && cp -R interview-intel ~/.zcode/skills/interview-inte
 岗位：产品运营
 地点：北京，中国
 岗位链接：（可选）
-面试官：（可选，姓名、职位及公开职业主页）
 个人背景：用户增长、数据分析经验
 重点：团队文化、面试流程、加班情况、薪资和职业发展
 ```
 
-**公司、岗位、面试官至少提供一项即可。** 其他字段可选。无论使用哪种语言输入，当前报告渲染器默认输出**简体中文**。
+**公司和岗位至少提供一项即可。** 其他字段可选。无论使用哪种语言输入，当前报告渲染器默认输出**简体中文**。
 
 **各平台官方文档：** [Codex](https://learn.chatgpt.com/docs/build-skills) · [Claude Code](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) · [Gemini CLI](https://geminicli.com/docs/cli/skills/) · [Cursor](https://cursor.com/docs/skills) · [Copilot](https://docs.github.com/en/copilot/concepts/customizations/agent-skills) · [OpenCode](https://opencode.ai/docs/skills) · [Windsurf / Devin Desktop](https://docs.devinai.cn/desktop/cascade/skills)
 
@@ -163,15 +160,6 @@ mkdir -p ~/.zcode/skills && cp -R interview-intel ~/.zcode/skills/interview-inte
 比较岗位职责和员工评价，提供中文报告及全部实际采用的来源。
 ```
 
-**指定面试官：**
-
-```text
-使用 Interview Intel Skill 研究 [公司] 的 [岗位]。
-面试官：[姓名、所在部门或职位、公开职业主页]。
-先确认身份，再整理其公开职业经历、技术文章或招聘观点。
-给出基于证据的准备建议，不要把预测写成面试官的确定偏好。
-```
-
 **比较矛盾评价：**
 
 ```text
@@ -182,14 +170,13 @@ mkdir -p ~/.zcode/skills && cp -R interview-intel ~/.zcode/skills/interview-inte
 
 ## 最终会得到什么？
 
-报告默认是**简体中文 Markdown**，开头提供一页式摘要，然后是六个栏目：
+报告默认是**简体中文 Markdown**，开头提供一页式摘要，然后是五个栏目：
 
 1. 公司概况与综合评价
 2. 员工及社交媒体评价
 3. 岗位评价、薪酬和风险
-4. HR / 面试官公开职业情报
-5. 面试预测与准备建议
-6. 原始来源、可信度及信息缺口
+4. 面试预测与准备建议
+5. 原始来源、可信度及信息缺口
 
 报告区分事实、本人公开表述、第三方评价、分析推断、面试预测和信息缺口。重要结论应能追溯到实际打开过的公开页面，并保留原始链接、可获取的日期和证据限制。
 
@@ -225,17 +212,16 @@ python3 scripts/interview_intel.py catalog --country JP
 
 ## 重点功能：公开员工体验与社交平台口碑
 
-输入国家、公司、岗位和面试官后，Agent 会**主动搜索职场社区与社交媒体的公开原帖**。只要提供了公司名称，就至少尝试两个独立平台，优先三个。例如中国大陆会重点尝试**知乎、脉脉、小红书、牛客和微博**，其他地区选择相应的职场社区。
+输入国家、公司和岗位后，Agent 会**主动搜索职场社区与社交媒体的公开原帖**。只要提供了公司名称，就至少尝试两个独立平台，优先三个。例如中国大陆会重点尝试**知乎、脉脉、小红书、牛客和微博**，其他地区选择相应的职场社区。
 
 报告会列出**实际检索过的平台及结果**。可以打开的员工分享会给出原帖链接、发布日期（如有）与局限，并归纳实际找到的正面、负面和不同观点；需要登录、仅有搜索摘要或无法打开时会明确说明。匿名作者的真实任职经历通常难以独立证明，不能仅凭一条帖子推导整个公司的文化。
 
-**默认取消数字评分，重点呈现可追溯的信息与实际评价。** 只有明确要求“评分”时才启用 [可选评分规则](references/scoring-rubric.md)，四字段输入方式保持不变。
+**默认取消数字评分，重点呈现可追溯的信息与实际评价。** 只有明确要求“评分”时才启用 [可选评分规则](references/scoring-rubric.md)，三字段输入方式保持不变。
 
 ## 全球覆盖与可信度
 
 - **全球研究：** 根据国家、岗位和语言动态选择企业官网、招聘平台、职业社交媒体与本地职场社区。数据源可在 [source-catalog.json](references/source-catalog.json) 中扩展。
 - **先核实，再下结论：** 搜索摘要只能帮助发现页面；验证码、登录限制及失效页面会单独记录。重复转载不会当成多份独立证据。
-- **谨慎核实面试官：** 同名不等于同一人；需要多个兼容的公开属性和独立来源。职业背景不能证明对方会参加你的面试。
 - **隐私边界：** 只研究与岗位有关的公开职业信息；不收集私人联系方式、家庭信息，也不绕过登录、付费墙或访问限制。
 - **如实处理缺失：** 找不到可靠岗位、薪资或人员资料时，会明确标注。宿主没有搜索工具时，只能输出检索计划，不能冒充已经完成在线研究。
 

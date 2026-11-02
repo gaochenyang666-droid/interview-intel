@@ -13,14 +13,24 @@
     "country": "US",
     "city": "Redmond"
   },
-  "interviewers": [],
   "candidate": {
     "summary": "Backend engineer with distributed systems and cloud service experience.",
-    "skills": ["distributed systems", "C#", "Azure", "testing"]
+    "skills": [
+      "distributed systems",
+      "C#",
+      "Azure",
+      "testing"
+    ]
   },
-  "focus": ["coding interview", "system design", "team culture"],
+  "focus": [
+    "coding interview",
+    "system design",
+    "team culture"
+  ],
   "research": {
     "max_queries": 18,
-    "languages": ["en"]
+    "languages": [
+      "en"
+    ]
   }
 }

@@ -8,7 +8,7 @@
 4. **Mandatory employee/community experience:** after confirming company identity, attempt at least two distinct external platforms, preferably three. Open original publicly accessible posts and record search terms and outcomes. Separate claims by current or former employees where visible; employment claims remain unverified unless corroborated.
 5. Interview experience: original posts with date, location, level, department, and interview stage. Prefer detailed contemporaneous accounts.
 6. Compensation: level, location, currency, period, sample size, and date. Preserve missing sample size.
-7. Interviewer: supplied public profile, official company bio, public technical projects, talks, articles, and first-person posts. Confirm the person with multiple compatible attributes.
+7. Role-level interview preparation: use accessible public accounts of interviews for the same role, location and level. Never identify or profile individual interviewers.
 
 ## Firsthand community search is required
 
@@ -34,14 +34,14 @@ Use English first:
 ```text
 "<company>" "<role>" interview experience
 "<company>" employee reviews salaries
-site:linkedin.com/in "<name>" "<company>" "<role>"
+site:reddit.com "<company>" "<role>" interview experience
 ```
 
 Then localize the action terms from the country profile:
 
 ```text
 "<company>" "<local role>" (<local terms>)
-"<name>" "<company>" (<local professional terms>)
+"<company>" "<local role>" (<local interview terms>)
 ```
 
 Do not translate a company's registered or product name unless an official local-language name is found. Retain aliases with their source.
@@ -51,7 +51,7 @@ Do not translate a company's registered or product name unless an official local
 - Strong matches: supplied official domain, supplied job URL, headquarters and role location, exact product line, compatible employee size.
 - Weak matches: similar brand, translated name, common founder name, regional subsidiary with unclear ownership.
 - When strong identifiers conflict, label the entity `ambiguous`. Summarize the alternatives and stop employer-specific conclusions.
-- For people, require at least two independent compatible attributes. A personalized profile URL supplied by the requester is a strong lead, but still verify public title and employer.
+- Focus on company and job identity. Individual interviewers are outside the scope of this Skill.
 
 ## Sample and bias checks
 

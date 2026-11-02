@@ -6,6 +6,13 @@ The format follows Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+### Simplified
+
+- Default user input now has three fields: country, company and role; `0` skips unknown information.
+- Removed interviewer profiling from search planning and rendered reports, with legacy JSON validation retained.
+- Report sections are now company, public employee/social reviews, role, interview preparation, and sources.
+
+
 ### Improved
 
 - Require at least two site-targeted external community platform attempts per new company research and record each result or access failure.

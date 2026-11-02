@@ -51,8 +51,7 @@ SECTION_ORDER = [
     ("company", "1. 公司概况与综合评价"),
     ("reviews", "2. 员工及社交媒体评价"),
     ("role", "3. 岗位评价"),
-    ("interviewer", "4. HR / 面试官公开情报"),
-    ("prep", "5. 面试预测与准备"),
+    ("prep", "4. 面试预测与准备"),
 ]
 KIND_LABELS = {
     "fact": "事实",
@@ -180,31 +179,12 @@ def normalize_request(request: dict[str, Any]) -> tuple[dict[str, Any], list[str
 
     location = request.get("location") if isinstance(request.get("location"), dict) else {}
     country, warnings = _normalize_country(location.get("country"), load_country_profiles())
-    interviewers = request.get("interviewers", [])
-    if not isinstance(interviewers, list):
-        warnings.append("interviewers 不是数组，已忽略")
-        interviewers = []
-
+    # Interviewer profiling has been retired from the active research workflow.
+    # Ignore old interviewer fields for backward-compatible input parsing.
     cleaned_interviewers: list[dict[str, Any]] = []
-    for index, person in enumerate(interviewers, start=1):
-        if not isinstance(person, dict):
-            warnings.append(f"第 {index} 位面试官不是对象，已忽略")
-            continue
-        name = _optional_target(person.get("name"), f"interviewers[{index - 1}].name", issues)
-        if not name and _skip_value(person.get("profile_url")):
-            warnings.append(f"第 {index} 位面试官缺少姓名和公开主页，已忽略")
-            continue
-        cleaned_interviewers.append(
-            {
-                "name": name,
-                "title": _clean_optional(person.get("title")),
-                "department": _clean_optional(person.get("department")),
-                "profile_url": _clean_optional(person.get("profile_url")),
-            }
-        )
 
-    if not (company_name or role_title or cleaned_interviewers):
-        issues.append("国家之外至少需要公司、岗位或面试官中的一项；全部填写 0 无法开展研究")
+    if not (company_name or role_title):
+        issues.append("国家之外至少需要公司或岗位中的一项；全部填写 0 无法开展研究")
     if issues:
         raise IntelValidationError(issues)
 
@@ -442,18 +422,6 @@ def build_queries(request: dict[str, Any], country_code: str | None) -> list[dic
                                   ["glassdoor", "reddit", "blind"], "查找团队工作体验"))
     if company:
         queries.extend(_community_queries(company, role, country_code))
-    for person in request.get("interviewers", []):
-        name = person.get("name")
-        title = person.get("title")
-        if name:
-            context = " ".join(x for x in [name, company, title, person.get("department")] if x)
-            queries.append(_query("en", "interviewer_identity", f'{_quote(context)} professional profile employer', 97,
-                                  ["linkedin", "github"], "核验职业身份和履历"))
-            queries.append(_query("en", "interviewer_public_work", f'{_quote(name)} {_quote(company)} articles speaking professional work', 85,
-                                  ["github", "youtube", "x"], "查找公开专业观点"))
-        elif person.get("profile_url"):
-            queries.append(_query("en", "interviewer_identity", f'{person["profile_url"]} employment role', 97,
-                                  ["linkedin", "github"], "核验公开资料"))
     for language in languages:
         if language == "en":
             continue
@@ -466,11 +434,6 @@ def build_queries(request: dict[str, Any], country_code: str | None) -> list[dic
             if role:
                 queries.append(_query(language, "local_interview", f'{_quote(target)} {terms} interview', 89, platforms,
                                       "使用当地语言查找面试经验"))
-        for person in request.get("interviewers", []):
-            if person.get("name"):
-                queries.append(_query(language, "local_interviewer",
-                                      f'{_quote(person["name"])} {_quote(company)} {terms}', 80, ["linkedin", "github"],
-                                      "本地语言核验公开职业资料"))
     seen: set[tuple[str, str]] = set()
     de_duplicated: list[dict[str, Any]] = []
     for item in sorted(queries, key=lambda q: (-q["priority"], q["language"])):
@@ -596,12 +559,6 @@ def build_plan(request: dict[str, Any], max_queries: int | None = None, network_
     questions: list[str] = []
     if normalized["company"]["name"] and not supplied_identifiers and not country_code:
         questions.append("若搜索结果中出现多个同名雇主，需确认公司官网或岗位链接后再归因。")
-    interviewer_warnings = []
-    for person in normalized["interviewers"]:
-        if not person.get("profile_url"):
-            interviewer_warnings.append("仅凭姓名不能确认面试官身份，需至少两个相互兼容的公开属性。")
-            break
-
     scaffold = {
         "schema_version": SCHEMA_VERSION,
         "request": normalized,
@@ -636,7 +593,6 @@ def build_plan(request: dict[str, Any], max_queries: int | None = None, network_
             "company_view": "",
             "opportunity_finding_ids": [],
             "risk_finding_ids": [],
-            "interviewer_note": "未提供可核验面试官资料" if not normalized["interviewers"] else "",
             "top_topics": [],
             "unresolved_questions": [],
         },
@@ -679,7 +635,7 @@ def build_plan(request: dict[str, Any], max_queries: int | None = None, network_
         "queries": queries,
         "sources": selected_sources,
         "community_targets": _community_targets(country_code) if normalized["company"].get("name") else [],
-        "warnings": warnings + interviewer_warnings,
+        "warnings": warnings,
         "stopping_rule": "公司身份核实后必须尝试至少两个独立职场社区或社交平台，记录实际查询词与访问失败。能打开原帖时展示正反评价、原文链接和样本局限。无法打开时明确说明，不能用官网宣传替代员工体验。",
         "scaffold": scaffold,
     }
@@ -976,7 +932,7 @@ def validate_research(data: dict[str, Any], warnings_out: list[str] | None = Non
         if finding_id in seen_finding_ids:
             issues.append(f"结论 ID 重复: {finding_id}")
         seen_finding_ids.add(finding_id)
-        if finding.get("section") not in {item[0] for item in SECTION_ORDER}:
+        if finding.get("section") not in {item[0] for item in SECTION_ORDER} | {"interviewer"}:
             issues.append(f"{finding_id}.section 无效")
         kind = finding.get("kind")
         if kind not in FINDING_KINDS:
@@ -1193,17 +1149,17 @@ def render_report(data: dict[str, Any]) -> str:
             [
                 "## 检索限制",
                 "",
-                "本次无法使用外部搜索或公开页面访问能力，因此没有生成公司、岗位、薪酬、员工评价或面试官事实。以下研究计划和缺口可供后续重试。",
+                "本次无法使用外部搜索或公开页面访问能力，因此没有生成公司、岗位、薪酬或员工评价事实。以下研究计划和缺口可供后续重试。",
                 "",
                 "未找到可靠公开证据。",
                 "",
             ]
         )
         for key, title in SECTION_ORDER:
-            if request.get("quick_mode") and ((key in {"company", "reviews"} and not request.get("company", {}).get("name")) or (key in {"role", "prep"} and not request.get("role", {}).get("title")) or (key == "interviewer" and not request.get("interviewers"))):
+            if request.get("quick_mode") and ((key in {"company", "reviews"} and not request.get("company", {}).get("name")) or (key in {"role", "prep"} and not request.get("role", {}).get("title"))):
                 continue
             lines.extend([f"## {title}", "", "未找到可靠公开证据。", ""])
-        lines.extend(["## 6. 来源与可信度", "", "本次未采集任何在线来源。", ""])
+        lines.extend(["## 5. 来源与可信度", "", "本次未采集任何在线来源。", ""])
         return "\n".join(lines).rstrip() + "\n"
 
     findings = data.get("findings", [])
@@ -1236,8 +1192,6 @@ def render_report(data: dict[str, Any]) -> str:
             "",
             summary_refs("risk_finding_ids"),
             "",
-            f"**面试官信息**：{_md_text(summary.get('interviewer_note'), '未提供可核验的面试官资料。')}",
-            "",
             "**最应准备的主题**",
             "",
         ]
@@ -1262,8 +1216,6 @@ def render_report(data: dict[str, Any]) -> str:
             if section_key in {"company", "reviews"} and not request.get("company", {}).get("name"):
                 continue
             if section_key in {"role", "prep"} and not request.get("role", {}).get("title"):
-                continue
-            if section_key == "interviewer" and not request.get("interviewers"):
                 continue
         lines.extend([f"## {title}", ""])
         if section_key == "reviews":
@@ -1296,38 +1248,6 @@ def render_report(data: dict[str, Any]) -> str:
                 lines.append(_render_finding(finding))
         else:
             lines.append("- 未找到可靠公开证据。")
-        if section_key == "interviewer":
-            lines.append("")
-            interviewers = data.get("interviewers", [])
-            if interviewers:
-                for person in interviewers:
-                    name = _md_text(person.get("display_name"), "未命名联系人")
-                    status = _md_text(person.get("identity_status"), "unconfirmed")
-                    lines.append(
-                        f"### {name} · 身份状态：{status} · 匹配置信度：{_md_text(person.get('match_confidence'), 'low')}"
-                    )
-                    basis = person.get("matching_basis", [])
-                    if basis:
-                        lines.append(f"- 匹配依据：{_join_zh(basis)}")
-                    if status in {"unconfirmed", "not_found"}:
-                        lines.append("- 身份未可靠确认，已暂停对该人的履历、关注点和偏好归因。")
-                    else:
-                        lines.append(f"- 公开职位：{_md_text(person.get('public_role'), '未披露')}")
-                        for field, label in [
-                            ("career", "已核实职业背景"),
-                            ("professional_focus", "专业领域"),
-                            ("public_hiring_signals", "公开招聘关注点"),
-                            ("possible_interview_topics", "可能面试主题"),
-                            ("gaps", "信息缺口"),
-                        ]:
-                            values = person.get(field, [])
-                            if values:
-                                lines.append(f"- {label}：{_join_zh(values)}")
-                    refs = " ".join(
-                        f"[{item}](#{item.lower()})" for item in person.get("evidence_ids", [])
-                    )
-                    if refs:
-                        lines.append(f"- 公开来源：{refs}")
         if section_key == "role":
             market = data.get("market", {})
             observations = market.get("salary_observations", [])
@@ -1402,7 +1322,7 @@ def render_report(data: dict[str, Any]) -> str:
                     lines.extend(["", f"### {label}", "", _md_text(value)])
         lines.append("")
 
-    lines.extend(["## 6. 来源与可信度", ""])
+    lines.extend(["## 5. 来源与可信度", ""])
     evidence = data.get("evidence", [])
     if not evidence:
         lines.append("未找到可靠公开证据。")
@@ -1473,7 +1393,7 @@ def render_report(data: dict[str, Any]) -> str:
             f"- 实际尝试语言：{', '.join(research.get('languages_attempted', [])) or '未记录'}。",
             "- 匿名员工评价、单一社交媒体爆料和搜索摘要均按低可信度处理，不作为已核实事实。",
             "- 同文转载按来源血缘合并，不当作独立交叉验证。",
-            "- 本报告中的模拟问题属于预测，面试官个人关注点仅在身份确认后采用。",
+            "- 本报告中的模拟问题属于预测，需根据岗位实际要求判断。",
             "",
         ]
     )

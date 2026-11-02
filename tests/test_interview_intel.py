@@ -354,23 +354,23 @@ class PlannerTests(unittest.TestCase):
         self.assertTrue(plan["entity_resolution"]["confirmation_questions"])
         self.assertGreater(len(plan["queries"]), 0)
 
-    def test_missing_interviewer_does_not_create_person_claims(self) -> None:
+    def test_planner_does_not_create_interviewer_queries(self) -> None:
         plan = build_plan(request())
         self.assertEqual(plan["scaffold"]["interviewers"], [])
-        self.assertIn("未提供可核验面试官资料", plan["scaffold"]["summary"]["interviewer_note"])
+        self.assertNotIn("interviewer_note", plan["scaffold"]["summary"])
+        self.assertFalse(any("interviewer" in query["category"] for query in plan["queries"]))
 
 
 class EvidenceTests(unittest.TestCase):
-    def test_complete_research_validates_and_has_six_report_sections(self) -> None:
+    def test_complete_research_validates_and_has_five_report_sections(self) -> None:
         report = render_report(complete_research())
         for heading in [
             "一页式摘要",
             "1. 公司概况与综合评价",
             "2. 员工及社交媒体评价",
             "3. 岗位评价",
-            "4. HR / 面试官公开情报",
-            "5. 面试预测与准备",
-            "6. 来源与可信度",
+            "4. 面试预测与准备",
+            "5. 来源与可信度",
         ]:
             self.assertIn(heading, report)
         self.assertEqual(len(re.findall(r"^\d+\. \*\*模拟问题", report, flags=re.MULTILINE)), 10)
@@ -504,7 +504,7 @@ class EvidenceTests(unittest.TestCase):
         data["summary"]["interviewer_note"] = "身份未确认。"
         data["summary"]["unresolved_questions"] = ["面试官身份"]
         report = render_report(data)
-        self.assertIn("身份未可靠确认", report)
+        self.assertNotIn("身份未可靠确认", report)
         self.assertNotIn("公开文章显示其从事服务可靠性工作", report)
 
     def test_salary_without_observed_numbers_stays_unquantified(self) -> None:
@@ -606,9 +606,9 @@ class EvidenceTests(unittest.TestCase):
             "sources_consulted": [],
         }
         report = render_report(data)
-        self.assertIn("没有生成公司、岗位、薪酬、员工评价或面试官事实", report)
+        self.assertIn("没有生成公司、岗位、薪酬或员工评价事实", report)
         self.assertIn("未找到可靠公开证据", report)
-        self.assertIn("## 6. 来源与可信度", report)
+        self.assertIn("## 5. 来源与可信度", report)
 
     def test_source_catalog_routing_is_not_hardcoded_to_three_countries(self) -> None:
         germany = {item["id"] for item in route_sources("DE", ["de", "en"])}
@@ -621,7 +621,7 @@ class EvidenceTests(unittest.TestCase):
         data = json.loads(path.read_text(encoding="utf-8"))
         normalized = validate_research(data)
         self.assertEqual(len(normalized["evidence"]), 10)
-        self.assertEqual(len(normalized["findings"]), 23)
+        self.assertEqual(len(normalized["findings"]), 22)
         self.assertEqual(normalized["research"]["entity"]["status"], "confirmed")
 
 
