@@ -22,37 +22,93 @@
 
 Поиск начинается **на английском**, затем добавляются запросы **на местном языке**. В каталоге возможных источников есть LinkedIn, Indeed, Glassdoor, Reddit, Blind, 牛客, 脉脉, OpenWork, JobPlanet, Naukri, SEEK и региональные площадки. Наличие площадки в каталоге не гарантирует доступ к её материалам.
 
-## Быстрая установка в Codex
+## Установка для разных ИИ-агентов
 
-**Требования:** Python 3.10+, Git и ИИ-агент с возможностью веб-поиска или просмотра общедоступных страниц. Дополнительные пакеты Python и платные API для локальных скриптов не требуются.
+Interview Intel использует открытый формат **Agent Skills (`SKILL.md`)** и может работать в нескольких совместимых ИИ-агентах. Сам по себе выбор модели GPT, Claude или Gemini навык не устанавливает.
+
+**Требования:** Git, Python 3.10+ и агент с доступом к веб-поиску/браузеру и возможностью запускать локальный Python. Платные API и дополнительные пакеты Python для утилит не обязательны.
+
+### Вариант A: общая установка
+
+В macOS и Linux Codex, Gemini CLI, Cursor, GitHub Copilot, OpenCode и совместимые версии Windsurf / Devin Desktop распознают каталог **`~/.agents/skills/`**:
 
 ```bash
 git clone https://github.com/gaochenyang666-droid/interview-intel.git
-mkdir -p ~/.codex/skills
-cp -R interview-intel ~/.codex/skills/interview-intel
+mkdir -p ~/.agents/skills
+cp -R interview-intel ~/.agents/skills/interview-intel
 ```
 
-Откройте **новую сессию Codex** и вызовите `$interview-intel`:
+Откройте новую сессию агента или обновите список навыков. Для **Claude Code** используйте отдельный каталог:
+
+```bash
+mkdir -p ~/.claude/skills
+cp -R interview-intel ~/.claude/skills/interview-intel
+```
+
+При желании можно использовать собственные каталоги клиентов:
+
+| Клиент | Личный каталог | Каталог проекта |
+| --- | --- | --- |
+| **OpenAI Codex** | `~/.agents/skills/` | `.agents/skills/` |
+| **Claude Code** | `~/.claude/skills/` | `.claude/skills/` |
+| **Google Gemini CLI** | `~/.gemini/skills/` или `~/.agents/skills/` | `.gemini/skills/` или `.agents/skills/` |
+| **Cursor** | `~/.cursor/skills/` или `~/.agents/skills/` | `.cursor/skills/` или `.agents/skills/` |
+| **GitHub Copilot (CLI / VS Code Agent)** | `~/.copilot/skills/` или `~/.agents/skills/` | `.github/skills/` или `.agents/skills/` |
+| **OpenCode** | `~/.config/opencode/skills/` или `~/.agents/skills/` | `.opencode/skills/` или `.agents/skills/` |
+| **Windsurf / Devin Desktop** | `~/.codeium/windsurf/skills/` или `~/.agents/skills/` | `.windsurf/skills/` или `.agents/skills/` |
+
+В таблице указаны **родительские каталоги**. Устанавливайте всю папку `interview-intel`, включая `SKILL.md`, `scripts/` и `references/`, в `<каталог>/interview-intel/`. В Windows используйте эквивалентные пути и команды копирования.
+
+### Вариант B: установщик Gemini CLI
+
+```bash
+gemini skills install https://github.com/gaochenyang666-droid/interview-intel.git
+gemini skills list
+```
+
+В Gemini CLI проверьте список через `/skills list`, обновите его командой `/skills reload` и подтвердите активацию при запросе.
+
+### ChatGPT и Claude в браузере
+
+- **ChatGPT Skills:** В поддерживаемых аккаунтах и рабочих пространствах откройте **Plugins → Skills → Create → Upload from your computer** и загрузите проверенный пакет. Эта установка не связана с локальной установкой Codex. [Документация OpenAI](https://help.openai.com/en/articles/20001066-skills-in-chatgpt).
+- **Claude.ai:** Поддерживаемые аккаунты могут импортировать собственные навыки через настройки Skills, обычно из ZIP-архива. Возможности веб-поиска и запуска кода зависят от среды. [Документация Anthropic](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview).
+
+Для полноценной работы Interview Intel необходимы **живой веб-поиск и проверка доказательств через Python**. В интерфейсе без запуска файлов можно использовать методику исследования, но нельзя считать, что полный процесс проверки был выполнен.
+
+### Вызов навыка
+
+| Клиент | Пример |
+| --- | --- |
+| Codex | `Use $interview-intel to research ...` |
+| Claude Code | `/interview-intel` или запрос на естественном языке |
+| Gemini CLI | Попросите использовать Interview Intel; проверьте через `/skills list` |
+| Cursor / GitHub Copilot / OpenCode | В режиме агента: `Используй навык Interview Intel для исследования ...` |
+| Windsurf / Devin Desktop | Обратитесь к Cascade; `@interview-intel`, если поддерживается |
+| ChatGPT / Claude web | Выберите установленный пользовательский навык, если он доступен |
+
+Пример запроса для любого совместимого агента:
 
 ```text
-Используй $interview-intel для подготовки к собеседованию.
+Используй навык Interview Intel и подготовь отчёт со ссылками на источники.
 Компания: Microsoft
 Должность: Software Engineer II
 Место: Редмонд, США
 Ссылка на вакансию: [необязательно]
-Интервьюер / HR: [имя и публичный профессиональный профиль, необязательно]
+Интервьюер: [имя, должность и публичный профиль, необязательно]
 Мой опыт: C#, распределённые системы, Azure
-Приоритеты: культура команды, техническое интервью, зарплата
+Приоритеты: техническое интервью, культура команды, зарплата
 ```
 
-**Обязательны только компания и должность.** По желанию можно указать страну, город, описание вакансии, этап интервью, профессиональную биографию кандидата и публичный профиль интервьюера. Для других систем с поддержкой Agent Skills порядок установки зависит от платформы; см. [SKILL.md](SKILL.md).
+**Обязательны только компания и должность.** Текущий формат итогового отчёта: **Markdown на упрощённом китайском языке**.
+
+**Официальные инструкции:** [Codex](https://learn.chatgpt.com/docs/build-skills) · [Claude Code](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) · [Gemini CLI](https://geminicli.com/docs/cli/skills/) · [Cursor](https://cursor.com/docs/skills) · [Copilot](https://docs.github.com/en/copilot/concepts/customizations/agent-skills) · [OpenCode](https://opencode.ai/docs/skills) · [Windsurf / Devin Desktop](https://docs.devinai.cn/desktop/cascade/skills)
 
 ## Примеры использования
 
 **Исследование локального рынка:**
 
 ```text
-Используй $interview-intel. Компания: Toyota.
+Используй навык Interview Intel. Компания: Toyota.
 Должность: Product Manager. Страна: Япония.
 Проверь официальные вакансии и найди публичные отзывы на японском языке.
 Подготовь отчёт с ссылками и обозначенными ограничениями.
@@ -61,7 +117,7 @@ cp -R interview-intel ~/.codex/skills/interview-intel
 **Подготовка к встрече с известным интервьюером:**
 
 ```text
-Используй $interview-intel для [компания], должность [должность].
+Используй навык Interview Intel для [компания], должность [должность].
 Интервьюер: [имя, должность и ссылка на публичный профессиональный профиль].
 Сначала проверь личность, затем изучи публичные профессиональные материалы.
 Отделяй подтверждённые взгляды от гипотез о вопросах интервью.
@@ -70,7 +126,7 @@ cp -R interview-intel ~/.codex/skills/interview-intel
 **Сравнение противоречивых отзывов:**
 
 ```text
-Используй $interview-intel для [компания] и вакансии [должность] в [город].
+Используй навык Interview Intel для [компания] и вакансии [должность] в [город].
 Сравни официальную информацию с доступными отзывами сотрудников.
 Укажи, какие утверждения проверены, какие являются мнениями, а что неизвестно.
 ```

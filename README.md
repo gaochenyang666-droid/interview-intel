@@ -22,32 +22,88 @@ Prepare for an interview with more context than a job description. **Interview I
 
 Search begins in **English** and adds the relevant **local language**. A country-aware source catalog includes candidates such as LinkedIn, Indeed, Glassdoor, Reddit, Blind, 牛客, 脉脉, OpenWork, JobPlanet, Naukri, SEEK and regional job boards. **Listing a platform does not imply unrestricted access or verified content.**
 
-## Quick start: install for Codex
+## Install on your AI agent
 
-**Requirements:** Python 3.10+, Git, and a Codex/Agent environment with web search or browser tools. No paid API or third-party Python runtime packages are required for the local utilities.
+Interview Intel follows the **Agent Skills (`SKILL.md`)** format. It can be installed on several AI coding agents that read skill folders; the underlying model name (GPT, Claude, Gemini, etc.) is not itself an installation method.
+
+**Requirements:** Git, Python 3.10+, and an agent with public web search/browser access and permission to run local Python commands. No paid API or third-party Python runtime dependencies are required for the included utilities.
+
+### Option A: One shared installation for several agents
+
+On macOS or Linux, the cross-agent **`~/.agents/skills/`** location is supported by Codex, Gemini CLI, Cursor, GitHub Copilot, OpenCode and compatible Windsurf / Devin Desktop versions:
 
 ```bash
 git clone https://github.com/gaochenyang666-droid/interview-intel.git
-mkdir -p ~/.codex/skills
-cp -R interview-intel ~/.codex/skills/interview-intel
+mkdir -p ~/.agents/skills
+cp -R interview-intel ~/.agents/skills/interview-intel
 ```
 
-Start a **new Codex session** so it can discover the Skill. Invoke it explicitly with `$interview-intel`:
+Open a new session or reload the agent's skills. **Claude Code uses `~/.claude/skills/`**, so install to its dedicated directory with:
+
+```bash
+mkdir -p ~/.claude/skills
+cp -R interview-intel ~/.claude/skills/interview-intel
+```
+
+Alternatively, use a client's dedicated directory or install only for one repository:
+
+| AI client | Personal skill folder | Project skill folder |
+| --- | --- | --- |
+| **OpenAI Codex** | `~/.agents/skills/` | `.agents/skills/` |
+| **Claude Code** | `~/.claude/skills/` | `.claude/skills/` |
+| **Google Gemini CLI** | `~/.gemini/skills/` or `~/.agents/skills/` | `.gemini/skills/` or `.agents/skills/` |
+| **Cursor** | `~/.cursor/skills/` or `~/.agents/skills/` | `.cursor/skills/` or `.agents/skills/` |
+| **GitHub Copilot (CLI / VS Code Agent)** | `~/.copilot/skills/` or `~/.agents/skills/` | `.github/skills/` or `.agents/skills/` |
+| **OpenCode** | `~/.config/opencode/skills/` or `~/.agents/skills/` | `.opencode/skills/` or `.agents/skills/` |
+| **Windsurf / Devin Desktop** | `~/.codeium/windsurf/skills/` or `~/.agents/skills/` | `.windsurf/skills/` or `.agents/skills/` |
+
+All locations in the table are **parent folders**. The complete project folder, including `SKILL.md`, `scripts/` and `references/`, must be installed as `<parent>/interview-intel/`. Do not copy `SKILL.md` alone. You can use `cp -R interview-intel <parent>/interview-intel` after cloning. On Windows, use the equivalent user-home paths and file-copy commands.
+
+### Option B: Gemini CLI's installer
+
+Gemini CLI also provides an official Git repository installer:
+
+```bash
+gemini skills install https://github.com/gaochenyang666-droid/interview-intel.git
+gemini skills list
+```
+
+Inside Gemini CLI, use `/skills list` or `/skills reload` to confirm discovery and approve activation when prompted.
+
+### ChatGPT and Claude in the browser
+
+- **ChatGPT Skills:** On an eligible ChatGPT workspace, open **Plugins → Skills → Create → Upload from your computer** and upload a reviewed copy of the skill package. Availability depends on account/workspace settings. This is separate from installing a folder for Codex. See [OpenAI's Skills guide](https://help.openai.com/en/articles/20001066-skills-in-chatgpt).
+- **Claude.ai:** Eligible users can add custom Skills via Claude's Skills/settings interface, typically using a ZIP package. The browser's code and web access may differ from Claude Code. See [Anthropic's Agent Skills guide](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview).
+
+Because Interview Intel relies on **live searches and Python validation**, make sure the chosen interface offers both capabilities. In a chat-only interface without file execution, you can reuse the research methodology, but you cannot claim the full validated CLI workflow ran.
+
+### Invoke the skill
+
+| Host | Example invocation or discovery |
+| --- | --- |
+| Codex | `Use the Interview Intel skill to research ...` |
+| Claude Code | `/interview-intel` or ask Claude to use the Interview Intel skill |
+| Gemini CLI | Ask to use Interview Intel; inspect with `/skills list` |
+| Cursor / GitHub Copilot / OpenCode | Use agent mode and ask: `Use the Interview Intel skill to research ...` |
+| Windsurf / Devin Desktop | Ask Cascade to use Interview Intel; `@interview-intel` where supported |
+| ChatGPT / Claude browser | Select or invoke the uploaded custom skill where available |
+
+Example prompt (works conceptually across all supported agents):
 
 ```text
-Use $interview-intel to prepare a cited interview intelligence report.
+Use the Interview Intel skill to prepare a source-linked interview report.
 Company: Microsoft
 Role: Software Engineer II
 Location: Redmond, Washington, United States
-Job URL: [paste the public job posting, if available]
-Interviewer: [optional name and public professional profile]
+Job URL: [optional public job posting]
+Interviewer: [optional name, position and public professional profile]
 My background: C#, distributed systems, Azure, testing
-Focus: team culture, interview process, system design, salary
+Focus: interview process, team culture, system design and compensation
 ```
 
-**Only the company and role are required.** Country/city, a job posting or URL, an interviewer/HR contact, interview stage, candidate skills and focus questions improve the research. Leave unknown fields blank; the agent should identify and label any information gaps.
+**Only company and role are required.** Country, job URL, named interviewer, interview stage and candidate experience are optional. The current report renderer outputs **Simplified Chinese**, regardless of the language of these installation instructions.
 
-Other Agent Skills-compatible hosts can use the same [SKILL.md](SKILL.md), but installation and tool availability depend on the host. The Codex path above is the documented local installation.
+**Official setup references:** [Codex](https://learn.chatgpt.com/docs/build-skills) · [Claude Code](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) · [Gemini CLI](https://geminicli.com/docs/cli/skills/) · [Cursor](https://cursor.com/docs/skills) · [Copilot](https://docs.github.com/en/copilot/concepts/customizations/agent-skills) · [OpenCode](https://opencode.ai/docs/skills) · [Windsurf / Devin Desktop](https://docs.devinai.cn/desktop/cascade/skills)
 
 ## Usage examples
 
@@ -72,7 +128,7 @@ role-specific questions. Mark all interview-question forecasts as predictions.
 **Evaluate competing evidence:**
 
 ```text
-Use $interview-intel to research [company] for [role] in [city].
+Use the Interview Intel skill to research [company] for [role] in [city].
 Compare official hiring information with recent, accessible employee
 reviews. Distinguish first-hand claims, anonymous opinions and unknowns.
 ```

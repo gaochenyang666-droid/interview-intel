@@ -22,37 +22,93 @@
 
 La búsqueda comienza en **inglés** y continúa en el **idioma local** del país de interés. El catálogo incluye fuentes potenciales como LinkedIn, Indeed, Glassdoor, Reddit, Blind, 牛客, 脉脉, OpenWork, JobPlanet, Naukri y SEEK. La inclusión de una plataforma no garantiza que sus contenidos sean accesibles.
 
-## Instalación rápida con Codex
+## Instalación en distintos asistentes de IA
 
-**Requisitos:** Python 3.10 o posterior, Git y un agente con herramientas de búsqueda web o navegador. Los scripts locales no necesitan paquetes adicionales de Python ni API de pago.
+Interview Intel utiliza el formato abierto **Agent Skills (`SKILL.md`)**. Puede integrarse en varios agentes compatibles. Elegir un modelo GPT, Claude o Gemini por sí solo no instala la habilidad.
+
+**Requisitos:** Git, Python 3.10 o posterior y un agente con acceso a búsqueda web o navegador y permiso para ejecutar Python localmente. Las utilidades no requieren paquetes Python externos ni una API de pago.
+
+### Opción A: instalación compartida
+
+En macOS y Linux, Codex, Gemini CLI, Cursor, GitHub Copilot, OpenCode y versiones compatibles de Windsurf / Devin Desktop reconocen **`~/.agents/skills/`**:
 
 ```bash
 git clone https://github.com/gaochenyang666-droid/interview-intel.git
-mkdir -p ~/.codex/skills
-cp -R interview-intel ~/.codex/skills/interview-intel
+mkdir -p ~/.agents/skills
+cp -R interview-intel ~/.agents/skills/interview-intel
 ```
 
-Abre una **nueva sesión de Codex** y utiliza `$interview-intel`:
+Abre una sesión nueva o actualiza las habilidades. **Claude Code** utiliza su propia carpeta:
+
+```bash
+mkdir -p ~/.claude/skills
+cp -R interview-intel ~/.claude/skills/interview-intel
+```
+
+También puedes instalarla en las rutas específicas de cada producto:
+
+| Cliente | Carpeta personal | Carpeta de proyecto |
+| --- | --- | --- |
+| **OpenAI Codex** | `~/.agents/skills/` | `.agents/skills/` |
+| **Claude Code** | `~/.claude/skills/` | `.claude/skills/` |
+| **Google Gemini CLI** | `~/.gemini/skills/` o `~/.agents/skills/` | `.gemini/skills/` o `.agents/skills/` |
+| **Cursor** | `~/.cursor/skills/` o `~/.agents/skills/` | `.cursor/skills/` o `.agents/skills/` |
+| **GitHub Copilot (CLI / VS Code Agent)** | `~/.copilot/skills/` o `~/.agents/skills/` | `.github/skills/` o `.agents/skills/` |
+| **OpenCode** | `~/.config/opencode/skills/` o `~/.agents/skills/` | `.opencode/skills/` o `.agents/skills/` |
+| **Windsurf / Devin Desktop** | `~/.codeium/windsurf/skills/` o `~/.agents/skills/` | `.windsurf/skills/` o `.agents/skills/` |
+
+Estas son carpetas **contenedoras**: copia el directorio completo en `<ruta>/interview-intel/`, incluyendo `SKILL.md`, `scripts/` y `references/`. En Windows, usa las rutas y comandos equivalentes.
+
+### Opción B: instalador de Gemini CLI
+
+```bash
+gemini skills install https://github.com/gaochenyang666-droid/interview-intel.git
+gemini skills list
+```
+
+En Gemini CLI, `/skills list` muestra las habilidades y `/skills reload` vuelve a detectarlas. Acepta la activación cuando se te solicite.
+
+### ChatGPT y Claude en el navegador
+
+- **ChatGPT Skills:** Si tu cuenta o espacio de trabajo reúne los requisitos, ve a **Plugins → Skills → Create → Upload from your computer** y sube un paquete revisado. Esta opción es independiente de Codex. [Documentación oficial](https://help.openai.com/en/articles/20001066-skills-in-chatgpt).
+- **Claude.ai:** Las cuentas compatibles permiten importar habilidades personalizadas desde la configuración de Skills, normalmente mediante un archivo ZIP. El acceso web y la ejecución de código dependen del entorno. [Documentación oficial](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview).
+
+Para ejecutar todo el flujo de Interview Intel se necesitan **búsquedas reales y validación con Python**. En una interfaz sin ejecución de archivos, solo puede reutilizarse la metodología, sin afirmar que se ejecutaron las comprobaciones.
+
+### Cómo invocar la habilidad
+
+| Cliente | Ejemplo |
+| --- | --- |
+| Codex | `Use $interview-intel to research ...` |
+| Claude Code | `/interview-intel` o una petición en lenguaje natural |
+| Gemini CLI | Pide usar Interview Intel; compruébalo con `/skills list` |
+| Cursor / GitHub Copilot / OpenCode | En modo agente: `Usa la habilidad Interview Intel para investigar ...` |
+| Windsurf / Devin Desktop | Indícalo en Cascade; `@interview-intel` si está disponible |
+| ChatGPT / Claude web | Selecciona la habilidad personalizada instalada, si está disponible |
+
+Ejemplo independiente del cliente:
 
 ```text
-Usa $interview-intel para preparar mi entrevista.
+Usa la habilidad Interview Intel para preparar un informe con fuentes.
 Empresa: Microsoft
 Puesto: Software Engineer II
-Ubicación: Redmond, Estados Unidos
-Enlace de la oferta: [opcional]
-Entrevistador o RR. HH.: [nombre y perfil profesional público, opcional]
-Mi experiencia: C#, sistemas distribuidos, Azure
-Prioridades: cultura de equipo, entrevista técnica y salario
+Lugar: Redmond, Estados Unidos
+Enlace a la oferta: [opcional]
+Entrevistador: [nombre, cargo y perfil profesional público, opcional]
+Experiencia: C#, sistemas distribuidos, Azure
+Prioridades: entrevista técnica, equipo, salario
 ```
 
-**Solo son obligatorios el nombre de la empresa y el puesto.** Puedes añadir ciudad, país, oferta, etapa del proceso, experiencia y datos profesionales públicos del entrevistador para mejorar la precisión. La instalación en otros agentes compatibles con Agent Skills depende de sus propias instrucciones; consulta [SKILL.md](SKILL.md).
+**Solo son obligatorios empresa y puesto.** Actualmente, el informe final se genera en **chino simplificado**.
+
+**Documentación de plataformas:** [Codex](https://learn.chatgpt.com/docs/build-skills) · [Claude Code](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) · [Gemini CLI](https://geminicli.com/docs/cli/skills/) · [Cursor](https://cursor.com/docs/skills) · [Copilot](https://docs.github.com/en/copilot/concepts/customizations/agent-skills) · [OpenCode](https://opencode.ai/docs/skills) · [Windsurf / Devin Desktop](https://docs.devinai.cn/desktop/cascade/skills)
 
 ## Ejemplos de uso
 
 **Buscar información local en otro idioma:**
 
 ```text
-Usa $interview-intel para investigar Toyota y el puesto Product Manager en Japón.
+Usa la habilidad Interview Intel para investigar Toyota y el puesto Product Manager en Japón.
 Consulta primero las ofertas oficiales y después las comunidades japonesas.
 Entrega un informe con fuentes, limitaciones y preguntas de práctica.
 ```
@@ -60,7 +116,7 @@ Entrega un informe con fuentes, limitaciones y preguntas de práctica.
 **Analizar a un entrevistador identificado:**
 
 ```text
-Usa $interview-intel. Empresa: [empresa]. Puesto: [puesto].
+Usa la habilidad Interview Intel. Empresa: [empresa]. Puesto: [puesto].
 Entrevistador: [nombre, cargo y URL de perfil profesional público].
 Confirma su identidad antes de atribuirle experiencia o publicaciones.
 Extrae temas profesionales relevantes y distingue predicciones de hechos.
@@ -69,7 +125,7 @@ Extrae temas profesionales relevantes y distingue predicciones de hechos.
 **Contrastar opiniones contradictorias:**
 
 ```text
-Usa $interview-intel para [empresa], [puesto] y [ciudad].
+Usa la habilidad Interview Intel para [empresa], [puesto] y [ciudad].
 Compara la información oficial con opiniones laborales recientes y accesibles.
 Separa hechos, experiencias anónimas, inferencias y lagunas de información.
 ```

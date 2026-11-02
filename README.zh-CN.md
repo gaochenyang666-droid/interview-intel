@@ -22,39 +22,93 @@ Interview Intel 是一个可以安装到 AI Agent 的面试研究技能。只需
 
 研究先使用**英文**查询，再使用目标国家的**本地语言**查询。候选来源包括 LinkedIn、Indeed、Glassdoor、Reddit、Blind、牛客、脉脉、OpenWork、JobPlanet、Naukri、SEEK 等。部分平台需要登录或有访问限制，列入目录不代表可以读取其全部内容。
 
-## 两分钟安装：Codex
+## 支持哪些 AI？如何安装？
 
-需要 Python 3.10 或更新版本、Git，以及具备联网搜索或浏览器能力的 Agent。核心脚本没有第三方 Python 运行时依赖，也不强制使用付费 API。
+Interview Intel 使用通用的 **Agent Skills（`SKILL.md`）** 结构，可以在多种 AI Agent 中安装使用。具体由支持 Skill 的客户端负责发现、联网检索和调用 Python 脚本；仅切换 GPT、Claude 或 Gemini 模型，并不会自动安装技能。
+
+**运行要求：** Git、Python 3.10 及以上，以及具有公开网页搜索或浏览器工具和本地 Python 执行权限的 Agent。本地脚本无第三方运行时依赖，不强制付费 API。
+
+### 方案 A：一次安装，多款 AI 共用
+
+对于 macOS / Linux，Codex、Gemini CLI、Cursor、GitHub Copilot、OpenCode 以及兼容版本的 Windsurf / Devin Desktop 均可通过通用目录 **`~/.agents/skills/`** 发现 Skill：
 
 ```bash
 git clone https://github.com/gaochenyang666-droid/interview-intel.git
-mkdir -p ~/.codex/skills
-cp -R interview-intel ~/.codex/skills/interview-intel
+mkdir -p ~/.agents/skills
+cp -R interview-intel ~/.agents/skills/interview-intel
 ```
 
-重新打开 Codex 会话，然后直接输入：
+重新打开 Agent 会话或刷新技能列表。**Claude Code** 建议使用自己的目录：
+
+```bash
+mkdir -p ~/.claude/skills
+cp -R interview-intel ~/.claude/skills/interview-intel
+```
+
+也可以按照下表安装到各客户端的独立目录，或者安装到某个具体项目：
+
+| AI 客户端 | 用户级目录（所有项目） | 项目级目录 |
+| --- | --- | --- |
+| **OpenAI Codex** | `~/.agents/skills/` | `.agents/skills/` |
+| **Claude Code** | `~/.claude/skills/` | `.claude/skills/` |
+| **Google Gemini CLI** | `~/.gemini/skills/` 或 `~/.agents/skills/` | `.gemini/skills/` 或 `.agents/skills/` |
+| **Cursor** | `~/.cursor/skills/` 或 `~/.agents/skills/` | `.cursor/skills/` 或 `.agents/skills/` |
+| **GitHub Copilot（CLI / VS Code Agent）** | `~/.copilot/skills/` 或 `~/.agents/skills/` | `.github/skills/` 或 `.agents/skills/` |
+| **OpenCode** | `~/.config/opencode/skills/` 或 `~/.agents/skills/` | `.opencode/skills/` 或 `.agents/skills/` |
+| **Windsurf / Devin Desktop** | `~/.codeium/windsurf/skills/` 或 `~/.agents/skills/` | `.windsurf/skills/` 或 `.agents/skills/` |
+
+表中均为**父目录**，需要将整个 `interview-intel` 文件夹放入其中，形成 `<目录>/interview-intel/SKILL.md`。`scripts/` 和 `references/` 也要保留。Windows 用户使用相应的用户目录与复制命令。
+
+### 方案 B：Gemini CLI 直接从 GitHub 安装
+
+```bash
+gemini skills install https://github.com/gaochenyang666-droid/interview-intel.git
+gemini skills list
+```
+
+进入 Gemini CLI 后，可以使用 `/skills list` 查看已加载技能，或用 `/skills reload` 刷新。触发技能时按照提示批准激活。
+
+### ChatGPT 网页版与 Claude 网页版
+
+- **ChatGPT Skills：** 符合资格的工作区可进入 **Plugins → Skills → Create → Upload from your computer**，上传已检查的 Skill 包。是否显示该入口取决于账户与工作区权限。此流程与 Codex 本地安装相互独立。参见 [ChatGPT 官方说明](https://help.openai.com/en/articles/20001066-skills-in-chatgpt)。
+- **Claude.ai：** 在支持自定义 Skills 的账户中，可通过 Skills / 设置入口导入 Skill 包（通常为 ZIP）。网页版的联网搜索及代码执行能力取决于具体账户和环境。参见 [Anthropic 官方说明](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)。
+
+**注意：** Interview Intel 完整研究流程需要网页检索和 Python 证据校验。如果所用 AI 只能聊天、没有本地文件或代码执行权限，可以参考其研究方法，但不能宣称已经执行完整的自动校验流程。
+
+### 各客户端如何调用？
+
+| 客户端 | 调用示例 |
+| --- | --- |
+| Codex | `使用 Interview Intel Skill 研究……` |
+| Claude Code | `/interview-intel`，或直接要求 Claude 使用 Interview Intel |
+| Gemini CLI | 自然语言要求使用 Interview Intel；用 `/skills list` 检查 |
+| Cursor / GitHub Copilot / OpenCode | 在 Agent 模式中输入 `使用 Interview Intel Skill 研究……` |
+| Windsurf / Devin Desktop | 在 Cascade 中指定 Interview Intel；支持时可用 `@interview-intel` |
+| ChatGPT / Claude 网页版 | 在支持的界面中选择或调用已导入的 Skill |
+
+跨平台通用提示词：
 
 ```text
-使用 $interview-intel，为我生成带来源的面试情报报告。
+请使用 Interview Intel Skill，为我生成带有来源链接的面试情报报告。
 公司：字节跳动
 岗位：产品运营
 地点：北京，中国
-岗位链接：（可选，粘贴公开 JD）
-面试官：（可选，姓名、职位、公开主页）
-个人背景：有用户增长和数据分析经验
-重点：团队文化、加班情况、面试流程、薪资和岗位发展
+岗位链接：（可选）
+面试官：（可选，姓名、职位及公开职业主页）
+个人背景：用户增长、数据分析经验
+重点：团队文化、面试流程、加班情况、薪资和职业发展
 ```
 
-**必填项只有公司和岗位。** 国家、城市、JD、面试轮次、面试官公开资料、个人技能背景都可以省略。提供的信息越明确，越容易避免同名企业与不同团队混淆。
+**只需要公司名称和岗位。** 其他字段可选。无论使用哪种语言输入，当前报告渲染器默认输出**简体中文**。
 
-其他兼容 Agent Skills 的客户端也可参考 [SKILL.md](SKILL.md) 使用，但安装路径和是否有可用搜索工具由具体客户端决定。
+**各平台官方文档：** [Codex](https://learn.chatgpt.com/docs/build-skills) · [Claude Code](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) · [Gemini CLI](https://geminicli.com/docs/cli/skills/) · [Cursor](https://cursor.com/docs/skills) · [Copilot](https://docs.github.com/en/copilot/concepts/customizations/agent-skills) · [OpenCode](https://opencode.ai/docs/skills) · [Windsurf / Devin Desktop](https://docs.devinai.cn/desktop/cascade/skills)
 
 ## 更多调用方式
 
 **日本岗位研究：**
 
 ```text
-使用 $interview-intel 研究 Toyota 在日本东京的 Product Manager 岗位。
+使用 Interview Intel Skill 研究 Toyota 在日本东京的 Product Manager 岗位。
 优先核实官方招聘信息，再用日语检索 OpenWork 等本地平台。
 比较岗位职责和员工评价，提供中文报告及全部实际采用的来源。
 ```
@@ -62,7 +116,7 @@ cp -R interview-intel ~/.codex/skills/interview-intel
 **指定面试官：**
 
 ```text
-使用 $interview-intel 研究 [公司] 的 [岗位]。
+使用 Interview Intel Skill 研究 [公司] 的 [岗位]。
 面试官：[姓名、所在部门或职位、公开职业主页]。
 先确认身份，再整理其公开职业经历、技术文章或招聘观点。
 给出基于证据的准备建议，不要把预测写成面试官的确定偏好。
@@ -71,7 +125,7 @@ cp -R interview-intel ~/.codex/skills/interview-intel
 **比较矛盾评价：**
 
 ```text
-使用 $interview-intel 调查 [公司] [城市] 的 [岗位]。
+使用 Interview Intel Skill 调查 [公司] [城市] 的 [岗位]。
 对比公司官方招聘信息与近期可访问的员工评价。
 区分一手事实、匿名体验、推断与没有证据的部分。
 ```
