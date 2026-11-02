@@ -234,6 +234,15 @@ Claude Code 中先执行 `/plugin marketplace add gaochenyang666-droid/interview
 
 各商店入口、上架材料与当前状态见 [PUBLISHING.md](PUBLISHING.md)。仓库可安装不代表已经获得官方精选商店认证。
 
+### 中国大陆技能市场上架
+
+**千问 AI 平台技能市场**支持公众发布，发布者需要登录、实名认证、上传包含根目录 `SKILL.md` 的 ZIP 文件，并经过安全及人工审核。也可将公开 GitHub Skill 地址分享到 Kimi 供用户安装。具体操作见 [发布指南](PUBLISHING.md)。
+
+```bash
+# 在本地仓库目录生成千问市场上传包
+python3 -m zipfile -c interview-intel-skill.zip SKILL.md LICENSE README.md references scripts examples agents
+```
+
 ## 全球覆盖与可信度
 
 - **全球研究：** 根据国家、岗位和语言动态选择企业官网、招聘平台、职业社交媒体与本地职场社区。数据源可在 [source-catalog.json](references/source-catalog.json) 中扩展。

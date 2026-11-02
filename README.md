@@ -234,6 +234,10 @@ In Claude Code run `/plugin marketplace add gaochenyang666-droid/interview-intel
 
 See [publishing status, submission links and ready-made listing metadata](PUBLISHING.md). Public directory approval is **not** implied by a working GitHub install.
 
+### Mainland China Skill directories
+
+Qwen AI Platform offers a public Skill marketplace with ZIP submission and identity verification. Kimi supports installing a shared GitHub Skill URL. See [the publishing guide](PUBLISHING.md) for the Qwen ZIP packaging command, publisher review requirements and links.
+
 ## Coverage and reliability
 
 - **Global discovery:** country profiles and a modifiable [source catalog](references/source-catalog.json) route searches toward official sites, job boards, professional profiles, public communities and employer-review sites.

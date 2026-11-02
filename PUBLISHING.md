@@ -21,9 +21,28 @@ This project is hosted at **https://github.com/gaochenyang666-droid/interview-in
 | OpenAgentSkill | https://www.openagentskill.com/submit | Free repository queue; not confirmed |
 | SkillsMP | https://skillsmp.com | Indexed from GitHub; no guaranteed or verified listing |
 | KillerSkills | https://killerskills.ai/submit | Requires sign-in; not submitted |
+| Qwen AI Platform / Qoder Skill marketplace | https://www.qianwenai.com/hub/skills | Requires publisher login, verified identity, ZIP upload, security/manual review |
+| Kimi (Moonshot) | https://www.kimi.com/features/skills | Supports installation via shared GitHub Skill URL; no general public catalog submission confirmed |
 | agent-skills.market | https://agent-skills.market/submit | Paid listing ($25); **do not pay without explicit approval** |
 
 Other marketplaces may have different eligibility, review and security requirements. Installing the project from a compatible GitHub source does not imply endorsement by any vendor.
+
+## Mainland China: Qwen AI Platform public Skill marketplace
+
+This is a **public listing channel** (not just a personal Skill upload). Official instructions: https://platform.qianwenai.com/docs/agent-infra/skills/publish
+
+1. On the project owner's Mac, from the GitHub repository directory, build a ZIP with `SKILL.md` **at the archive root**:
+   ```bash
+   cd "/Users/allen/Desktop/面试skill/interview-intel"
+   git pull --ff-only
+   python3 -m zipfile -c interview-intel-skill.zip SKILL.md LICENSE README.md references scripts examples agents
+   ```
+   Check the ZIP size is under **10 MiB** and that `SKILL.md` is at its root. The archive is a publication artifact and does not need to be committed.
+2. Log in to [Qwen Skills marketplace](https://www.qianwenai.com/hub/skills), select **Skill 发布**, set your author handle if this is the first publication and complete the required real-name verification.
+3. Upload the ZIP, confirm these fields: slug `interview-intel`, title `Interview Intel`, current beta version `0.1.0-beta.1` (or the next version accepted by the marketplace), license **MIT**, and the summary below.
+4. Submit for security checks and human review. Track the status in [My Skills](https://www.qianwenai.com/hub/skills/manage). Submission is not publication.
+
+**Kimi** currently documents using a public GitHub Skill URL to install and share. This provides distribution through Kimi users but does not guarantee inclusion in Kimi's featured Skill Store.
 
 ## Listing text
 
