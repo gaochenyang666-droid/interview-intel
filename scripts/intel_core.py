@@ -969,7 +969,7 @@ def validate_research(data: dict[str, Any], warnings_out: list[str] | None = Non
                 finding["confidence"] = ceiling
                 warnings.append(f"{finding_id} 可信度从 {confidence} 降为 {ceiling}，依据为实际来源类型与独立性")
 
-    interviewers = normalized_data.get("interviewers")
+    interviewers = normalized_data.get("interviewers", [])
     if not isinstance(interviewers, list):
         issues.append("interviewers 必须是数组")
         interviewers = []

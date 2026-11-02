@@ -540,7 +540,7 @@ class EvidenceTests(unittest.TestCase):
         report = render_report(data)
         self.assertIn("未找到该小型企业的可靠员工评价或面试样本", report)
         self.assertIn("未找到带样本量的小型企业岗位薪酬数据", report)
-        self.assertIn("未提供可核验资料", report)
+        self.assertNotIn("**面试官信息**", report)
 
     def test_invalid_source_url_is_rejected(self) -> None:
         data = complete_research()
