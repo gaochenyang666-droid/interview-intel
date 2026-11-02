@@ -1,35 +1,30 @@
 # Interview Intel
 
-[中文说明](README.zh-CN.md)
+**Global interview research for AI agents, with traceable sources.**
 
-Interview Intel is an installable Agent Skill for evidence-led interview research and employer due diligence. It helps an AI agent investigate a company, role, compensation signals, workplace discussions, interview process, and publicly documented HR or interviewer backgrounds, then produce a cited Simplified Chinese report.
+[English](README.md) · [简体中文](README.zh-CN.md) · [Español](README.es.md) · [Русский](README.ru.md)
 
-> **Status:** `v0.1.0-beta.1`. The core workflow is functional and tested, but it intentionally depends on the host agent's search and browser capabilities.
+[![Tests](https://github.com/gaochenyang666-droid/interview-intel/actions/workflows/test.yml/badge.svg)](https://github.com/gaochenyang666-droid/interview-intel/actions/workflows/test.yml) · [Latest beta release](https://github.com/gaochenyang666-droid/interview-intel/releases/tag/v0.1.0-beta.1) · [MIT License](LICENSE)
 
-## What it does
+Prepare for an interview with more context than a job description. **Interview Intel** is an installable Agent Skill that researches an employer, a specific role, public workplace discussions, compensation signals, interview processes, and the verified *professional* background of a named interviewer or HR contact. It produces a **source-linked report in Simplified Chinese** with explicit confidence and evidence limitations.
 
-- Routes research across global and country-specific recruiting, employer-review, salary, social, and professional sources.
-- Runs English searches first, then adds the primary local language for the target country.
-- Collects evidence from opened public pages instead of treating search snippets as facts.
-- Separates official facts, first-person statements, third-party assessments, inferences, predictions, and information gaps.
-- Calculates conservative confidence from source type, access status, and source independence.
-- Deduplicates canonical URLs and identifies shared-origin reposts.
-- Supports public research on named HR contacts or interviewers without assuming they are part of a specific interview.
-- Produces a six-section Chinese report with a one-page summary and ten evidence-bounded mock questions.
-- Records access failures and never bypasses logins, CAPTCHAs, paywalls, or platform permissions.
-- Quarantines prompt-injection text and redacts unrelated personal email addresses, phone numbers, and residential addresses.
+> **Public beta: v0.1.0-beta.1.** The Skill uses the **host agent's web search/browser tools** for live research. The included Python scripts plan queries, validate evidence, and render reports; they **do not independently crawl websites**.
 
-## Requirements
+## What can it help with?
 
-- Python 3.10 or newer.
-- A host Agent with public web search or browser access.
-- No paid API and no third-party Python runtime dependency.
+| Question | What the report covers |
+| --- | --- |
+| Is this company worth considering? | Official company facts, business context, workplace feedback, recent hiring signals, and disagreements across sources. |
+| What is this job really asking for? | Verified job description, responsibilities, skill gaps, compensation observations, role and location differences. |
+| How do employees describe the workplace? | Public employee reviews and social discussions with dates, sampling caveats, and source independence checks. |
+| What do we know about the interviewer? | Identity-checked professional history, published work, and stated hiring criteria, where publicly available. |
+| How should I prepare? | A targeted preparation plan, follow-up questions, and **10 labeled practice questions** tied to available evidence. |
 
-The local scripts do not crawl the web. They build the research plan, validate evidence, deduplicate sources, and render the report. The Agent performs the searches and opens the cited pages.
+Search begins in **English** and adds the relevant **local language**. A country-aware source catalog includes candidates such as LinkedIn, Indeed, Glassdoor, Reddit, Blind, 牛客, 脉脉, OpenWork, JobPlanet, Naukri, SEEK and regional job boards. **Listing a platform does not imply unrestricted access or verified content.**
 
-## Installation
+## Quick start: install for Codex
 
-Clone the repository and install it as a local Codex skill:
+**Requirements:** Python 3.10+, Git, and a Codex/Agent environment with web search or browser tools. No paid API or third-party Python runtime packages are required for the local utilities.
 
 ```bash
 git clone https://github.com/gaochenyang666-droid/interview-intel.git
@@ -37,169 +32,111 @@ mkdir -p ~/.codex/skills
 cp -R interview-intel ~/.codex/skills/interview-intel
 ```
 
-Start a new Agent session after installation. You can invoke the skill explicitly:
+Start a **new Codex session** so it can discover the Skill. Invoke it explicitly with `$interview-intel`:
 
 ```text
-Use $interview-intel to research this job.
-
+Use $interview-intel to prepare a cited interview intelligence report.
 Company: Microsoft
 Role: Software Engineer II
-Country: United States
-City: Redmond
-Job URL: <public job URL>
-Candidate background: backend systems, C#, cloud services, testing
-Focus: technical interviews, system design, team culture
+Location: Redmond, Washington, United States
+Job URL: [paste the public job posting, if available]
+Interviewer: [optional name and public professional profile]
+My background: C#, distributed systems, Azure, testing
+Focus: team culture, interview process, system design, salary
 ```
 
-The Agent will produce the research plan, perform public-source research, validate the resulting evidence document, and render a Chinese report.
+**Only the company and role are required.** Country/city, a job posting or URL, an interviewer/HR contact, interview stage, candidate skills and focus questions improve the research. Leave unknown fields blank; the agent should identify and label any information gaps.
 
-## Command-line tools
+Other Agent Skills-compatible hosts can use the same [SKILL.md](SKILL.md), but installation and tool availability depend on the host. The Codex path above is the documented local installation.
+
+## Usage examples
+
+**Explore an employer and role (no interviewer provided):**
+
+```text
+Use $interview-intel. Company: Toyota. Role: Product Manager.
+Country: Japan. Search Japanese workplace and job sources, compare
+the responsibilities with the official listing, and output the cited Chinese report.
+```
+
+**Prepare for a named interviewer:**
+
+```text
+Use $interview-intel. Company: [company]. Role: [position].
+Interviewer: [full name, job title, public profile link].
+Verify the identity before attributing career information.
+Summarize publicly expressed professional interests and prepare
+role-specific questions. Mark all interview-question forecasts as predictions.
+```
+
+**Evaluate competing evidence:**
+
+```text
+Use $interview-intel to research [company] for [role] in [city].
+Compare official hiring information with recent, accessible employee
+reviews. Distinguish first-hand claims, anonymous opinions and unknowns.
+```
+
+## What the finished report looks like
+
+The output is a **Simplified Chinese Markdown report**, with a one-page summary followed by six numbered sections:
+
+1. Company background and assessment
+2. Employee and social-media perspectives
+3. Role, responsibilities, compensation and risks
+4. Public HR/interviewer professional intelligence
+5. Interview predictions and preparation
+6. Sources, confidence and unresolved gaps
+
+Findings are identified as verified facts, first-person statements, third-party opinions, analysis, predictions, or missing information. Important findings cite inspected public pages, original URLs and available dates. When the company or interviewer cannot be identified reliably, the report limits attribution rather than guessing.
+
+**[Read a complete sample: Microsoft Software Engineer II](examples/report-us-software-engineer.md)** · [Input format](references/input-schema.md) · [Evidence format](references/evidence-schema.md) · [Report specification](references/report-spec.md)
+
+## Advanced: run the local CLI
+
+The CLI is useful for building or validating structured research. **It does not perform web searches by itself**; the agent fills the evidence document after inspecting accessible sources.
 
 ```bash
+cd interview-intel
+
+# See supported commands
 python3 scripts/interview_intel.py --help
 
-python3 scripts/interview_intel.py plan \
-  examples/input-us-software-engineer.json \
-  --format markdown \
-  --network-status available
+# Generate an English-first, country-aware research plan
+python3 scripts/interview_intel.py plan examples/input-us-software-engineer.json --format markdown
 
-python3 scripts/interview_intel.py scaffold \
-  examples/input-us-software-engineer.json \
-  --output research.json
+# Create an empty research document for an agent to populate
+python3 scripts/interview_intel.py scaffold examples/input-us-software-engineer.json --output research.json
 
+# Validate a completed evidence document
 python3 scripts/interview_intel.py validate research.json
 
-python3 scripts/interview_intel.py render \
-  research.json \
-  --output report.md
+# Produce the Chinese Markdown report
+python3 scripts/interview_intel.py render research.json --output report.md
 
+# Inspect candidate sources for Japan
 python3 scripts/interview_intel.py catalog --country JP
 ```
 
-`plan` and `catalog` read local configuration only. They do not make network requests.
+Use [examples/research-us-software-engineer.json](examples/research-us-software-engineer.json) to try validation and rendering with already prepared example evidence. See [README.zh-CN.md](README.zh-CN.md) for a longer guided CLI walkthrough.
 
-## Input
+## Coverage and reliability
 
-Only a company name and role title are required:
+- **Global discovery:** country profiles and a modifiable [source catalog](references/source-catalog.json) route searches toward official sites, job boards, professional profiles, public communities and employer-review sites.
+- **Evidence first:** search snippets and blocked pages are leads, not verified evidence. Reposts with one origin do not count as independent corroboration.
+- **Interviewer identity:** a shared name is insufficient; public, compatible attributes and independent sources are required. Professional background does not prove participation in your interview or personal scoring preferences.
+- **Privacy:** no login/CAPTCHA bypass, private-contact harvesting or unrelated sensitive personal profiling. Do not submit private resumes, passwords or restricted pages.
+- **Honest failure:** inaccessible platforms, unmatched positions and missing evidence are reported as limitations. With no search tool, the Skill can provide a plan but not a live company research report.
 
-```json
-{
-  "company": {
-    "name": "Example Corp"
-  },
-  "role": {
-    "title": "Product Manager"
-  }
-}
-```
+Read the [research playbook](references/research-playbook.md), [source-routing rules](references/source-routing.md) and [known release limitations](CHANGELOG.md) for details.
 
-Optional fields include country, city, official website, role URL or public description, interviewer names and public profiles, interview stage, a role-relevant candidate summary, and focus questions.
-
-See [references/input-schema.md](references/input-schema.md) for the full input format.
-
-## Research and validation flow
-
-1. Normalize the request and identify the company entity.
-2. Generate English-first queries, then local-language queries.
-3. Rank candidate sources using the country, role, language, access mode, and research category.
-4. Open and verify the original pages.
-5. Record evidence with URL, date, access status, source type, an original-language excerpt, and limitations.
-6. Classify conclusions and validate the evidence graph.
-7. Render the Chinese report with traceable source links.
-
-Evidence rules are documented in [references/evidence-schema.md](references/evidence-schema.md). The report contract is in [references/report-spec.md](references/report-spec.md).
-
-## Report structure
-
-Every online report contains:
-
-1. One-page summary
-2. Company overview and evaluation
-3. Employee and social-media assessments
-4. Role assessment
-5. HR and interviewer public intelligence
-6. Interview predictions and preparation
-7. Sources and confidence
-
-Mock interview questions are labeled as predictions. Reports do not use unsupported 0 to 100 company scores.
-
-## Source coverage
-
-The modular catalog covers:
-
-- Global: LinkedIn, Glassdoor, Indeed, Levels.fyi, Reddit, X, YouTube, and GitHub.
-- China: BOSS直聘, 智联招聘, 前程无忧, 脉脉, 牛客, 知乎, 小红书, and 微博.
-- North America: Glassdoor, Indeed, Blind, Fishbowl, Wellfound, and Reddit.
-- Europe: LinkedIn, Glassdoor, kununu, StepStone, Welcome to the Jungle, and local communities.
-- Japan: OpenWork, 転職会議, Wantedly, X, and note.
-- Korea: JobPlanet, Saramin, JobKorea, Blind Korea, and Naver communities.
-- India: Naukri, AmbitionBox, LinkedIn, and Reddit.
-- Australia and New Zealand: SEEK, Glassdoor, LinkedIn, and local communities.
-- Southeast Asia: JobStreet, JobsDB, LinkedIn, and publicly indexed Facebook communities.
-- Latin America: LinkedIn, Indeed, Glassdoor, InfoJobs, and local communities.
-
-Catalog entries are discovery candidates, not guarantees of access. See [references/source-catalog.json](references/source-catalog.json) and [references/source-routing.md](references/source-routing.md).
-
-## Evidence and privacy
-
-- Do not bypass authentication, CAPTCHA, paywalls, robots restrictions, or platform permissions.
-- A search-result snippet is not verified evidence.
-- Anonymous reviews remain opinions and default to low confidence.
-- Reposts sharing one origin count as one independent source.
-- A name alone cannot establish an interviewer's identity.
-- Public professional information is used only when relevant to the target role.
-- Private contact details, home addresses, family information, health data, political views, and unrelated personal data are out of scope.
-- Candidate resumes and contact information are not written to logs or cache files.
-
-## Development
-
-Run the complete test suite:
+## Development and contributions
 
 ```bash
 python3 -m unittest discover -s tests -v
+python3 scripts/interview_intel.py validate examples/research-us-software-engineer.json
 ```
 
-Validate the example research artifact:
+Contributions and corrections are welcome through [Issues](https://github.com/gaochenyang666-droid/interview-intel/issues) and pull requests. Please do not publish candidate personal data, private interviewer details or copied login-gated content. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-```bash
-python3 scripts/interview_intel.py validate \
-  examples/research-us-software-engineer.json
-```
-
-The test suite covers country routing, multilingual planning, duplicate source handling, unsupported claims, conflicting reviews, sparse evidence, offline behavior, interviewer disambiguation, prompt injection, private-data redaction, and regression cases.
-
-## Project layout
-
-```text
-interview-intel/
-├── SKILL.md
-├── README.md
-├── README.zh-CN.md
-├── LICENSE
-├── CHANGELOG.md
-├── CONTRIBUTING.md
-├── agents/
-│   └── openai.yaml
-├── references/
-├── scripts/
-├── tests/
-├── examples/
-└── .github/workflows/
-```
-
-QA source material is intentionally excluded from the public Git history. The local QA workspace may contain public-page excerpts and must be reviewed again before any separate publication.
-
-## Known limitations
-
-- Search quality depends on the host Agent's available tools.
-- Public pages can require login or change without notice.
-- Anonymous review and salary aggregates may omit sample size and level details.
-- Native-language company and role aliases are not exhaustive.
-- An interviewer's public career does not prove participation, personality, or scoring preference.
-- The project does not support authenticated scraping or private-data investigation.
-
-See [CHANGELOG.md](CHANGELOG.md) for release history and [CONTRIBUTING.md](CONTRIBUTING.md) for contribution rules.
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+**License:** [MIT](LICENSE).
