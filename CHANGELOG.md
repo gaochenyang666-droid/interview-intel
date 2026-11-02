@@ -6,6 +6,11 @@ The format follows Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+### Fixed
+
+- Added a tested Qwen AI ZIP packager that guarantees root-level `SKILL.md`, filters cache files, and checks archive integrity and size; also supports the distinct QwenWork folder-wrapped layout.
+
+
 ### Distribution
 
 - Added Gemini CLI extension metadata and shared portable plugin skill wrapper.

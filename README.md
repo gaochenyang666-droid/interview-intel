@@ -236,7 +236,7 @@ See [publishing status, submission links and ready-made listing metadata](PUBLIS
 
 ### Mainland China Skill directories
 
-Qwen AI Platform offers a public Skill marketplace with ZIP submission and identity verification. Kimi supports installing a shared GitHub Skill URL. See [the publishing guide](PUBLISHING.md) for the Qwen ZIP packaging command, publisher review requirements and links.
+Qwen AI Platform offers a public Skill marketplace with ZIP submission and identity verification. Build a checked, root-level-SKILL.md ZIP with `python3 scripts/package_skill.py --format qwen-ai --output ~/Downloads/interview-intel-skill.zip`. Kimi supports installing a shared GitHub Skill URL. See [the publishing guide](PUBLISHING.md) for the Qwen ZIP packaging command, publisher review requirements and links.
 
 ## Coverage and reliability
 

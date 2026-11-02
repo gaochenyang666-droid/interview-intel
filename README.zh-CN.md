@@ -240,7 +240,7 @@ Claude Code 中先执行 `/plugin marketplace add gaochenyang666-droid/interview
 
 ```bash
 # 在本地仓库目录生成千问市场上传包
-python3 -m zipfile -c interview-intel-skill.zip SKILL.md LICENSE README.md references scripts examples agents
+python3 scripts/package_skill.py --format qwen-ai --output ~/Downloads/interview-intel-skill.zip
 ```
 
 ## 全球覆盖与可信度
