@@ -20,6 +20,12 @@ For the legacy/complete input, the renderer keeps the following sections in orde
 - Distinguish `未找到可靠公开证据` from `未检索` and from `页面无法访问`.
 - Mention search date, intended languages, actual languages attempted, and inaccessible sources.
 
+## Workplace experience is a central section
+
+Section `2. 员工及社交媒体评价` must report **which independent community platforms were actually searched**, whether accessible original posts were found, and which sources were blocked or required login. Where verified original pages exist, distinguish publicly expressed positive, negative and mixed employee experiences and cite original URLs and dates. An anonymous contributor's employment status is ordinarily unverified. Company marketing statements do not substitute for independent workplace experiences.
+
+If no public original review can be opened, write `未核验到可公开访问的员工原帖或评价` and list attempted platforms. Do not invent employees, quotes, proportions, or sentiments.
+
 ## Candidate-specific preparation
 
 - Use only the candidate information supplied by the user.
@@ -42,4 +48,4 @@ Before presenting the report, confirm:
 
 ## Optional opportunity-scoring block
 
-Inside `一页式摘要`, a separate `### 面试机会评分` block displays an experimental opportunity index (only if eligible), dimension scores, coverage percentages, source-quality grades, fixed weights and finding citations. It does not create a seventh numbered report section. If ratings were not supplied, show `暂未评分`. The 0–100 values are weighted conversions of 1–5 coded judgments; they are not probabilities.
+Default: **omit numeric score and any empty score block**. Only if the user explicitly requests scoring and `assessment.show_score` is `true`, render the optional breakdown inside the executive summary. This index is a contextual judgment, not an offer probability.

@@ -285,6 +285,127 @@ def _query(
     }
 
 
+
+# Prioritize public discussion platforms over official employer marketing pages.
+# Domains come from the existing source catalog, never from inferred URL templates.
+COMMUNITY_ORDER = {
+    "CN": ["zhihu", "maimai", "xiaohongshu", "nowcoder", "weibo"],
+    "US": ["reddit", "blind", "indeed", "glassdoor"],
+    "CA": ["reddit", "blind", "indeed", "glassdoor"],
+    "JP": ["note", "openwork", "転職会議", "x"],
+    "KR": ["naver", "blind-korea", "jobplanet"],
+    "IN": ["reddit", "ambitionbox", "indeed"],
+    "DE": ["kununu", "reddit", "indeed"],
+}
+COMMUNITY_FALLBACK = ["reddit", "indeed", "x", "facebook"]
+COMMUNITY_ACCESS = {"found", "blocked", "login_required", "snippet_only",
+                    "no_results", "irrelevant", "error"}
+COMMUNITY_POST_TYPES = {"employee_review", "forum_post", "social_post", "interview_report"}
+
+
+def _community_targets(country_code: str | None) -> list[dict[str, str]]:
+    """Return candidate platforms with actual indexed domains, not fabricated URLs."""
+    sources = {s["id"]: s for s in load_source_catalog()["sources"]
+               if s.get("status") != "retired"}
+    names = [*COMMUNITY_ORDER.get(country_code, []), *COMMUNITY_FALLBACK]
+    targets: list[dict[str, str]] = []
+    for name in names:
+        source = sources.get(name)
+        if not source or any(t["platform_id"] == name for t in targets):
+            continue
+        regions = set(source.get("regions", []))
+        if country_code and country_code not in regions and "global" not in regions:
+            continue
+        domains = source.get("search_domains") or []
+        if not domains:
+            continue
+        domain = domains[0].split("/", 1)[0]
+        if not re.fullmatch(r"[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", domain):
+            continue
+        targets.append({"platform_id": name, "domain": domain, "name": source["name"]})
+    return targets[:5]
+
+
+def _community_queries(company: str, role: str | None,
+                       country_code: str | None) -> list[dict[str, Any]]:
+    local_language = {
+        "CN": "zh-Hans", "JP": "ja", "KR": "ko", "DE": "de",
+        "ES": "es", "FR": "fr", "IN": "en",
+    }.get(country_code, "en")
+    words = {
+        "CN": "员工 工作体验 加班 离职",
+        "JP": "社員 口コミ 労働環境 退職",
+        "KR": "직원 후기 근무환경 퇴사",
+        "DE": "Mitarbeiter Erfahrungen Arbeitsklima",
+        "ES": "opiniones empleados ambiente laboral",
+        "FR": "avis salariés conditions de travail",
+    }.get(country_code, "employee experience culture workload")
+    terms = f'{_quote(company)} {role or ""} {words}'
+    queries: list[dict[str, Any]] = []
+    for position, target in enumerate(_community_targets(country_code)):
+        queries.append(_query(local_language, "community_platform",
+                              f'site:{target["domain"]} {terms}',
+                              93 - position, [target["platform_id"]],
+                              "寻找可公开打开的第一手职场体验、讨论和原帖，检查正反观点"))
+    return queries
+
+
+def _validate_community_attempts(data: dict[str, Any], issues: list[str]) -> None:
+    """For new research artifacts, require transparent attempts or honest access failures."""
+    research = data.get("research", {})
+    coverage = research.get("coverage", {})
+    if not isinstance(coverage, dict) or not coverage.get("community_required"):
+        return  # Legacy research files are still accepted.
+    if not data.get("request", {}).get("company", {}).get("name"):
+        return
+    if research.get("network_status") not in {"available", "partial"}:
+        return
+    attempts = coverage.get("community_attempts")
+    if not isinstance(attempts, list) or len(attempts) < 2:
+        issues.append("社交口碑研究至少需记录两个独立平台的检索尝试或访问失败")
+        return
+    evidence = _evidence_map(data)
+    distinct: set[str] = set()
+    for index, attempt in enumerate(attempts):
+        prefix = f"research.coverage.community_attempts[{index}]"
+        if not isinstance(attempt, dict):
+            issues.append(f"{prefix} 必须是对象")
+            continue
+        name = attempt.get("platform_id")
+        query = attempt.get("query")
+        result = attempt.get("result")
+        if not isinstance(name, str) or not name.strip():
+            issues.append(f"{prefix}.platform_id 必填")
+        else:
+            distinct.add(name)
+        if not isinstance(query, str) or not query.strip():
+            issues.append(f"{prefix}.query 必填，需记录实际执行的检索词")
+        if result not in COMMUNITY_ACCESS:
+            issues.append(f"{prefix}.result 无效")
+        ids = attempt.get("evidence_ids", [])
+        if not isinstance(ids, list):
+            issues.append(f"{prefix}.evidence_ids 必须是数组")
+            continue
+        if result == "found":
+            adopted = [evidence.get(eid) for eid in ids if isinstance(eid, str)]
+            if not adopted or not any(item and item.get("access_status") == "verified"
+                                      and item.get("source_type") in COMMUNITY_POST_TYPES
+                                      for item in adopted):
+                issues.append(f"{prefix} 标记 found 时必须关联可打开的原帖或员工评价证据")
+        elif ids:
+            issues.append(f"{prefix} 检索未采纳原帖时不能填写 evidence_ids")
+    if len(distinct) < 2:
+        issues.append("社交口碑研究至少需要两个不同的平台；同一平台多次检索仅计一次")
+    for finding in data.get("findings", []):
+        if not isinstance(finding, dict) or finding.get("section") != "reviews":
+            continue
+        if finding.get("kind") != "third_party_assessment":
+            continue
+        sources = [evidence.get(eid) for eid in finding.get("evidence_ids", [])]
+        if not any(item and item.get("access_status") == "verified"
+                   and item.get("source_type") in COMMUNITY_POST_TYPES for item in sources):
+            issues.append(f"{finding.get('id', 'reviews')} 社区评价必须引用实际打开的第三方原帖或员工体验")
+
 def build_queries(request: dict[str, Any], country_code: str | None) -> list[dict[str, Any]]:
     """Skip searches that require missing targets; still search English and local languages."""
     profiles = load_country_profiles()
@@ -319,6 +440,8 @@ def build_queries(request: dict[str, Any], country_code: str | None) -> list[dic
         if company:
             queries.append(_query("en", "company_culture", f'{contextual} work life balance promotion management', 82,
                                   ["glassdoor", "reddit", "blind"], "查找团队工作体验"))
+    if company:
+        queries.extend(_community_queries(company, role, country_code))
     for person in request.get("interviewers", []):
         name = person.get("name")
         title = person.get("title")
@@ -440,8 +563,13 @@ def build_plan(request: dict[str, Any], max_queries: int | None = None, network_
         candidates = [item for item in all_queries if item["language"] == language]
         if candidates:
             mandatory.append(max(candidates, key=lambda item: item["priority"]))
+    community = [item for item in all_queries if item["category"] == "community_platform"]
+    if normalized["company"].get("name") and requested_limit >= 6:
+        mandatory.extend(community[:2])
+    elif normalized["company"].get("name") and requested_limit >= 4 and not mandatory:
+        mandatory.extend(community[:1])
     selected_query_keys = {(item["language"], item["query"]) for item in mandatory}
-    queries = list(mandatory)
+    queries = list({(item["language"], item["query"]): item for item in mandatory}.values())
     for item in sorted(all_queries, key=lambda entry: (-entry["priority"], entry["language"])):
         key = (item["language"], item["query"])
         if len(queries) >= requested_limit:
@@ -487,7 +615,11 @@ def build_plan(request: dict[str, Any], max_queries: int | None = None, network_
                 "name": normalized["company"]["name"],
                 "basis": " | ".join(supplied_identifiers) or "",
             },
-            "coverage": {"queries_attempted": [], "sources_attempted": [], "failed_attempts": []},
+            "coverage": {
+                "queries_attempted": [], "sources_attempted": [], "failed_attempts": [],
+                "community_required": bool(normalized["company"].get("name")),
+                "community_attempts": [],
+            },
         },
         "evidence": [],
         "findings": [],
@@ -546,8 +678,9 @@ def build_plan(request: dict[str, Any], max_queries: int | None = None, network_
         "languages_planned": selected_languages,
         "queries": queries,
         "sources": selected_sources,
+        "community_targets": _community_targets(country_code) if normalized["company"].get("name") else [],
         "warnings": warnings + interviewer_warnings,
-        "stopping_rule": "关键结论具备独立来源后停止；若结果开始重复同一来源血缘或核心页面不可访问，则记录缺口并结束。",
+        "stopping_rule": "公司身份核实后必须尝试至少两个独立职场社区或社交平台，记录实际查询词与访问失败。能打开原帖时展示正反评价、原文链接和样本局限。无法打开时明确说明，不能用官网宣传替代员工体验。",
         "scaffold": scaffold,
     }
 
@@ -998,6 +1131,7 @@ def validate_research(data: dict[str, Any], warnings_out: list[str] | None = Non
             issues.append(f"网络状态为 {network_status} 时不得输出薪酬观察")
 
     validate_assessment(normalized_data, issues)
+    _validate_community_attempts(normalized_data, issues)
     if issues:
         raise IntelValidationError(issues)
     normalized_data["_validation_warnings"] = warnings
@@ -1091,7 +1225,7 @@ def render_report(data: dict[str, Any]) -> str:
         [
             "## 一页式摘要",
             "",
-            *render_score_lines(data),
+            *(render_score_lines(data) if data.get("assessment", {}).get("show_score") is True else []),
             f"**公司判断**：{_md_text(summary.get('company_view'), '未找到可靠公开证据。')}",
             "",
             "**岗位机会**",
@@ -1132,6 +1266,30 @@ def render_report(data: dict[str, Any]) -> str:
             if section_key == "interviewer" and not request.get("interviewers"):
                 continue
         lines.extend([f"## {title}", ""])
+        if section_key == "reviews":
+            attempts = research.get("coverage", {}).get("community_attempts", [])
+            lines.extend(["### 社交平台与职场社区检索情况", ""])
+            if attempts:
+                lines.extend(["| 平台 | 检索结果 | 采用的原帖证据 |", "|---|---|---|"])
+                statuses = {
+                    "found": "已核实原帖", "blocked": "访问受限",
+                    "login_required": "需要登录", "snippet_only": "仅搜索摘要",
+                    "no_results": "未找到结果", "irrelevant": "结果不相关",
+                    "error": "检索失败",
+                }
+                for attempt in attempts:
+                    refs = " ".join(f"[{eid}](#{eid.lower()})" for eid in attempt.get("evidence_ids", []))
+                    lines.append(f"| {_md_text(attempt.get('platform_id'))} | {statuses.get(attempt.get('result'), '未记录')} | {refs or '无'} |")
+            else:
+                lines.append("未记录可核查的社交平台原帖检索。")
+            lines.append("")
+            original_posts = [
+                e for e in data.get("evidence", [])
+                if e.get("source_type") in COMMUNITY_POST_TYPES
+                and e.get("access_status") == "verified"
+            ]
+            if not original_posts:
+                lines.extend(["**未核验到可公开访问的员工原帖或评价。** 以下调查只说明检索尝试和证据缺口。", ""])
         section_findings = by_section.get(section_key, [])
         if section_findings:
             for finding in section_findings:

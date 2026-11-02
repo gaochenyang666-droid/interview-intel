@@ -224,33 +224,13 @@ python3 scripts/interview_intel.py catalog --country JP
 
 Use [examples/research-us-software-engineer.json](examples/research-us-software-engineer.json) to try validation and rendering with already prepared example evidence. See [README.zh-CN.md](README.zh-CN.md) for a longer guided CLI walkthrough.
 
-## Experimental opportunity scoring
+## Public workplace discussions, firsthand reviews and social media
 
-Interview Intel can now provide a **transparent 0–100 opportunity index** for a *specific role and candidate*. It is **optional** and is withheld when insufficient evidence is available.
+When a company is supplied, Interview Intel **actively searches at least two different external community platforms**, ideally three. It uses site-specific queries and the target country's local language. In China, candidates include Zhihu, Maimai, Xiaohongshu, Nowcoder and Weibo; elsewhere it selects appropriate local and international communities.
 
-| Criterion | Weight |
-| --- | ---: |
-| Business stability | 15% |
-| Workplace culture | 20% |
-| Job scope and clarity | 15% |
-| Career growth | 15% |
-| Compensation competitiveness | 10% |
-| Candidate skills match | 15% |
-| Candidate preferences match | 10% |
+The report lists **platforms actually attempted**, links to publicly accessible original posts, and positive or negative experiences when available. It flags anonymous authors, unknown sample sizes, older posts, team/location differences, login barriers and inaccessible pages. Publicly accessible anonymous posts are **not independently verified employee identities**. Company marketing pages do not replace community accounts.
 
-Each criterion receives a justified **1–5 grade**, converted to 0 / 25 / 50 / 75 / 100 and combined using fixed weights. The report shows separate **company**, **role** and **candidate-fit** scores, **evidence coverage** and **source quality**. Missing facts remain **unscored**. An overall score requires at least **80% weighted coverage**, sufficient evidence in every dimension, and no low-quality dimension. Company culture requires independent employee evidence; compensation requires an independent comparison.
-
-The grades are evidence-backed agent judgments, **not scientific measurements, probabilities of receiving an offer, or universal employer rankings**. Results remain in Chinese in this release.
-
-Add optional `assessment.metrics` to a completed research JSON following [the scoring rubric](references/scoring-rubric.md), then run:
-
-```bash
-python3 scripts/interview_intel.py validate research.json
-python3 scripts/interview_intel.py score research.json --output scores.json
-python3 scripts/interview_intel.py render research.json --output report.md
-```
-
-When invoking the Skill in natural language, ask: **"Evaluate this opportunity using the evidence-driven rubric; leave unsupported criteria unscored."**
+**Numeric scoring is disabled by default** so attention stays on traceable research. Users can explicitly request the advanced [optional scoring rubric](references/scoring-rubric.md).
 
 ## Coverage and reliability
 

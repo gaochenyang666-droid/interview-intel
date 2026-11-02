@@ -33,6 +33,12 @@ Then add the ID to the relevant profile in `country-profiles.json`. Use a real p
 
 If a domain changes ownership or no longer represents the intended platform, set `status` to `retired`. Retired entries remain as an audit trail but are excluded from routing.
 
+## Public workplace community routing
+
+When the input specifies a company, the planner creates `community_platform` queries with `site:` operators, using indexed domains from **active catalog entries**. Country preferences prioritize Zhihu, Maimai, Xiaohongshu, Nowcoder and Weibo in China, Reddit and Blind in North America, and local review/community sites elsewhere. A query is a search task and does not imply the destination is accessible.
+
+For new reports, record at least two distinct platform attempts and their outcomes in `research.coverage.community_attempts`. If all platforms block access, disclose the limitation. Official employer pages are not third-party employee experiences.
+
 ## Runtime fallback
 
 - If a country is unknown, use the global profile and English.

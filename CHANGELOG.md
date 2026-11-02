@@ -6,6 +6,14 @@ The format follows Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+### Improved
+
+- Require at least two site-targeted external community platform attempts per new company research and record each result or access failure.
+- Prioritize accessible original employee and social-media posts with attribution, dates and sample limitations.
+- Disable numeric opportunity scores in reports by default; keep scoring available only on explicit request.
+
+
+
 ### Changed
 
 - Added optional four-field quick input: country / company / role / interviewer, with `0` meaning skip.

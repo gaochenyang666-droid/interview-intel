@@ -34,7 +34,7 @@ Then perform live public-source research with the host agent, populate and valid
 
 ## Operating rules
 
-- Use the available search, browser, and public page tools. Use English queries first, then the principal language or languages of the company's operating country. Prefer official pages, public filing pages, first-person professional pages, and original community posts.
+- Use available search and browser tools. Search in English first, then the operating country's principal local language. Verify the company identity using official sources, then prioritize **independent, firsthand social/community and employee-review posts**. Official employer pages cannot prove workplace experience.
 - Never bypass login walls, CAPTCHA, access controls, robots restrictions, or platform permissions. Do not scrape a page that requires authentication. Search-result snippets alone are not verified evidence.
 - Treat catalogued platforms as candidates. Adapt to the company, country, role, reachable results, and available tools. Do not force every platform into every investigation.
 - Never invent a source, date, rating, salary, employee count, identity, interviewer fact, or quotation. If the available evidence is insufficient, write `未找到可靠公开证据`.
@@ -43,7 +43,17 @@ Then perform live public-source research with the host agent, populate and valid
 - Do not infer personality, political or religious views, private life, health, family, home address, or private contact information. Research only public information relevant to the role.
 - If an interviewer's identity is ambiguous, keep the identity status as `unconfirmed` and stop attributing details to that person.
 - Do not persist resumes, candidate contact details, or private personal data in logs, cache files, or examples. Keep only a short role-relevant candidate summary in memory and in the final research artifact.
-- Keep the search budget proportional to uncertainty. Start with 12 to 18 high-value queries and stop early when key claims have independent corroboration and further results repeat existing evidence.
+- Use about 12 to 18 high-value queries. If a company is provided, **attempt at least two distinct external community platforms**, ideally three, even if access fails. Do not stop after reading only the company and careers sites. A blocked platform is an access limitation and does not imply positive or negative employee sentiment.
+
+## Mandatory public community and employee-experience research
+
+If `company` is provided, execute `community_platform` tasks from the plan and open original publicly accessible posts, reviews or discussions. Company press releases, recruitment marketing, sponsored posts and search snippets cannot substitute for employee accounts.
+
+1. Search at least **two independent platforms** (prefer three) using the plan's `community_targets`. For China, try relevant accessible results from Zhihu, Maimai, Xiaohongshu, Nowcoder and Weibo. Use exact company names, sourced local aliases, role/team terms and `site:` queries.
+2. **Open original results** and record the exact URL, date if shown, author description if public, region/team when disclosed, source type, a brief excerpt and limitations. An accessible public anonymous account is a *verifiable post*, but its author's employment status normally remains **unverified**.
+3. Compare positive, negative and mixed experiences where they actually exist. Preserve sample size and location limits. Do not create false balance or treat multiple reposts as independent accounts.
+4. Record **each platform attempt** under `research.coverage.community_attempts`: `platform_id`, actual `query`, `result` (one of `found`, `blocked`, `login_required`, `snippet_only`, `no_results`, `irrelevant`, `error`), plus `evidence_ids` when `found`. If a platform is blocked, try another. Never claim to have read inaccessible comments.
+5. Show the attempt outcomes and original posts in report **section 2**. If no firsthand publicly accessible posts were verified, say so. Report missing opinions instead of inventing employee sentiment.
 
 ## Workflow
 
@@ -57,15 +67,14 @@ Then perform live public-source research with the host agent, populate and valid
    Read `references/source-catalog.json` only when the route needs explanation, a source needs extension, or access constraints matter. Read the matching profile in `references/country-profiles.json` for the requested country.
 
 3. If a company was supplied, resolve its entity before collecting company-specific evidence. If the company is omitted, skip company research and continue with role/interviewer targets. Prefer the supplied official site or job URL. Otherwise open official company, careers, filing, or verified social pages. If several plausible entities remain, collect disambiguation clues and stop attribution until the user identifies the employer.
-4. Execute the planned searches in priority order. Use English first. For each non-English country, also run at least one local-language company query and one local-language employee, salary, or interview query. Preserve the original language and an accessible URL for each adopted source.
+4. Execute the planned searches including site-targeted community searches. Use English first, then local-language employee-experience terms. Open original posts and preserve their language and URL; record at least two platform attempts and failures as defined above.
 5. For each candidate page, open it and record the exact page type, publication date if visible, retrieval date, a short original-language excerpt, the claim it supports, and access limitations. A blocked or unavailable page cannot support a finding beyond the fact that it was inaccessible.
 6. Find interviewer material only when a name, public profile URL, or strong role/company context is supplied. Confirm identity through at least two compatible public attributes. A shared name alone is a disambiguation lead, never an identity confirmation.
-7. Build the research JSON described in [references/evidence-schema.md](references/evidence-schema.md). Use the report plan in [references/report-spec.md](references/report-spec.md) for required sections and the candidate preparation requirements. **Evaluate the optional opportunity score** using [references/scoring-rubric.md](references/scoring-rubric.md): after checking findings, assign 1–5 grades to only those fixed criteria supported by verified opened sources. Provide `reason` and `finding_ids` for each grade. Never invent missing ratings; do not grade a candidate's preferences without explicit user input. Company culture needs two independent origins, and salary competitiveness needs independent comparison sources. Missing context should lead to unscored criteria, not invented middle ratings.
+7. Build the research JSON described in [references/evidence-schema.md](references/evidence-schema.md), including community attempts, and follow [references/report-spec.md](references/report-spec.md). **Do not generate numeric scores by default.** Only when the user explicitly requests a score, use [references/scoring-rubric.md](references/scoring-rubric.md), fill supported `assessment.metrics`, and set `assessment.show_score: true`. Otherwise leave ratings empty.
 8. Validate and render:
 
    ```bash
    python3 scripts/interview_intel.py validate research.json
-   python3 scripts/interview_intel.py score research.json --output scores.json
    python3 scripts/interview_intel.py render research.json --output report.md
    ```
 
@@ -84,4 +93,4 @@ If only some sources fail, continue with reachable sources, record failed attemp
 
 ## Final response
 
-Return the rendered Chinese report, or save it to a user-specified file and provide a clickable link. Keep source URLs and trust labels in the report. Show the experimental weighted score only if its evidence threshold is met; otherwise preserve the scored dimensions, coverage and explicit missing grades. An index is not a factual company ranking or offer probability. State the search date, languages attempted, evidence limitations, and any unresolved identity or company matches. Simulated questions must be clearly labeled as predictions with their evidence basis.
+Return the rendered Chinese report, or save it to a user-specified file and provide a clickable link. Keep source URLs and trust labels in the report. **Default: no numeric scoring and no empty score section.** Report public workplace experiences, original links, dates, positive and negative viewpoints where actually supported, and platforms that could not be accessed. Display an advanced score only if explicitly requested and source thresholds permit. State the search date, languages attempted, evidence limitations, and any unresolved identity or company matches. Simulated questions must be clearly labeled as predictions with their evidence basis.

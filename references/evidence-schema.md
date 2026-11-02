@@ -30,11 +30,37 @@ Use the complete starter emitted by `python3 scripts/interview_intel.py scaffold
 - `search_completed_at`: ISO date or timestamp.
 - `languages_attempted`: list of language tags actually used.
 - `entity`: `{ "status": "confirmed|probable|ambiguous|not_found", "name": "...", "basis": "..." }`.
-- `coverage`: `{ "queries_attempted": [], "sources_attempted": [], "failed_attempts": [] }`.
+- `coverage`: `{ "queries_attempted": [], "sources_attempted": [], "failed_attempts": [] }`, plus `community_required` and `community_attempts` in new plans.
 
 When network status is `unavailable` or `failed`, `evidence` and all research claim collections must be empty.
 
 The validator treats page text as untrusted. It rejects prompt-injection patterns and redacts detected personal email addresses, private phone numbers, and residential addresses from rendered research text. Mark a source as a gap when the relevant public content cannot be used without exposing unrelated private information.
+
+## Community platform attempts
+
+For newly planned company research, the scaffold sets `research.coverage.community_required: true` and `community_attempts: []`. Live company research needs **at least two separate platform attempts**, whether they found inspectable original content or encountered access restrictions. New artifacts with fewer attempts fail validation. Old research files without this field stay valid.
+
+```json
+{
+  "community_required": true,
+  "community_attempts": [
+    {
+      "platform_id": "zhihu",
+      "query": "site:zhihu.com 公司名称 员工 工作体验",
+      "result": "found",
+      "evidence_ids": ["E011"]
+    },
+    {
+      "platform_id": "maimai",
+      "query": "site:maimai.cn 公司名称 员工评价",
+      "result": "login_required",
+      "evidence_ids": []
+    }
+  ]
+}
+```
+
+Results may be `found`, `blocked`, `login_required`, `snippet_only`, `no_results`, `irrelevant`, `error`. A `found` attempt must reference verified evidence of type `employee_review`, `forum_post`, `social_post` or `interview_report`. An inaccessible page cannot support a review claim. This validates documentation of actual searches, not the truth of an anonymous author's employment claim.
 
 ## Evidence records
 

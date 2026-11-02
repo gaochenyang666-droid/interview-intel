@@ -5,10 +5,27 @@
 1. Company identity: official site, official careers page, official investor relations or filing page, and an official social profile.
 2. Company state: latest official results or filing, recent credible news, workforce changes, and product changes.
 3. Role: exact public posting first; then similar active and archived postings from the same employer.
-4. Employee experience: country-appropriate review platforms and public forums. Separate current and former employees where visible.
+4. **Mandatory employee/community experience:** after confirming company identity, attempt at least two distinct external platforms, preferably three. Open original publicly accessible posts and record search terms and outcomes. Separate claims by current or former employees where visible; employment claims remain unverified unless corroborated.
 5. Interview experience: original posts with date, location, level, department, and interview stage. Prefer detailed contemporaneous accounts.
 6. Compensation: level, location, currency, period, sample size, and date. Preserve missing sample size.
 7. Interviewer: supplied public profile, official company bio, public technical projects, talks, articles, and first-person posts. Confirm the person with multiple compatible attributes.
+
+## Firsthand community search is required
+
+Use `plan.community_targets` and platform-specific `community_platform` queries. Search distinct public communities and open original results where available. Examples:
+
+```text
+site:reddit.com "<company>" employee experience culture
+site:zhihu.com "<company>" 员工 工作体验 加班
+site:maimai.cn "<company>" 员工 评价
+site:xiaohongshu.com "<company>" 离职 感受
+site:openwork.jp "<company>" 社員 口コミ
+site:blog.naver.com "<company>" 직원 후기
+```
+
+Look for positive, negative and mixed descriptions, exact role/team, relevant locale and recent dates. If an indexed result requires login or only exposes snippets, mark it inaccessible; **never reproduce a comment you did not actually read**. Continue with another platform until at least two have been tried.
+
+In `research.coverage.community_attempts`, record each platform ID, **actual executed query**, outcome and verified evidence IDs for original accessible posts. A blocked platform still counts as an attempt, but provides no review evidence. If all original posts are inaccessible, state that no independently inspectable public employee review was found. A real URL verifies a post exists; it does not authenticate an anonymous poster's work history.
 
 ## Query pattern
 
@@ -50,4 +67,4 @@ Report only observed values and source labels. Show `样本量未披露` when ab
 
 ## Search budget and stopping rule
 
-Start with official pages and the exact role, then cover the two most relevant review/community platforms and interviewer queries. Use about 12 to 18 queries by default. Stop when the core questions have enough independent evidence, when results repeat known lineage, or when access failures make further attempts low-value. Save context by opening only search results that can answer a defined research question.
+Use enough queries to confirm identity and the exact job, then search **at least two independently targeted community platforms** (prefer three), usually within 12 to 18 queries. Do not stop after reading company marketing pages. If posts are inaccessible, record attempts and access failures. Do not infer sentiment from missing data. Save context by opening only search results that can answer a defined research question.

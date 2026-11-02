@@ -217,31 +217,13 @@ python3 scripts/interview_intel.py catalog --country JP
 
 También puedes validar el [archivo de investigación de ejemplo](examples/research-us-software-engineer.json) sin efectuar búsquedas.
 
-## Nueva función: puntuación de oportunidades (experimental)
+## Reseñas públicas y experiencias laborales en redes sociales
 
-Interview Intel incorpora un **índice de 0 a 100** para valorar una vacante concreta en relación con una persona candidata, siempre que existan pruebas suficientes.
+Cuando se indica una empresa, el agente **busca publicaciones originales y accesibles en al menos dos plataformas externas**, preferiblemente tres. Emplea búsquedas específicas por sitio y el idioma local. En China se priorizan Zhihu, Maimai, Xiaohongshu, Nowcoder y Weibo; en otros países, las comunidades pertinentes.
 
-| Criterio | Peso |
-| --- | ---: |
-| Estabilidad empresarial | 15% |
-| Cultura de trabajo | 20% |
-| Claridad del puesto | 15% |
-| Desarrollo profesional | 15% |
-| Competitividad salarial | 10% |
-| Adecuación de competencias | 15% |
-| Preferencias de la persona candidata | 10% |
+El informe detalla **qué plataformas se intentaron consultar**, incluye enlaces originales, fecha si está disponible, y resume experiencias positivas y negativas que realmente pudieron leerse. Las barreras de acceso y los límites de las publicaciones anónimas quedan explícitos. Una publicación pública no confirma por sí sola que su autor haya trabajado en la empresa.
 
-El agente justifica una valoración del **1 al 5** para cada criterio. El cálculo usa pesos fijos y muestra por separado la empresa, el puesto, el ajuste personal, la cobertura de fuentes y su calidad. Los criterios sin evidencias permanecen **sin puntuar**. El índice global requiere al menos **80% de cobertura ponderada** y evidencia suficiente en las tres dimensiones.
-
-Es una evaluación contextual, **no una probabilidad de contratación ni una clasificación objetiva de empresas**.
-
-```bash
-python3 scripts/interview_intel.py validate research.json
-python3 scripts/interview_intel.py score research.json --output scores.json
-python3 scripts/interview_intel.py render research.json --output report.md
-```
-
-En el chat, pide al agente: «Valora esta oportunidad con la rúbrica basada en pruebas; deja sin puntuar lo que no pueda verificar». Consulta [la rúbrica completa](references/scoring-rubric.md).
+**La puntuación numérica está desactivada de forma predeterminada.** Se puede activar expresamente mediante la [rúbrica opcional](references/scoring-rubric.md).
 
 ## Alcance, fiabilidad y privacidad
 

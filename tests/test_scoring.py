@@ -25,7 +25,7 @@ class OpportunityScoringTests(unittest.TestCase):
         result = evaluate_assessment(normalized)
         self.assertIsNone(result["overall"])
         self.assertEqual(result["coverage_pct"], 0)
-        self.assertIn("暂未评分", render_report(data))
+        self.assertNotIn("面试机会评分", render_report(data))
 
     def test_scaffold_has_empty_optional_assessment(self):
         data = build_plan({"company": {"name": "Example Corp"}, "role": {"title": "Engineer"}})
@@ -42,6 +42,8 @@ class OpportunityScoringTests(unittest.TestCase):
         self.assertEqual(scores["coverage_pct"], 45.0)
         self.assertIsNone(scores["dimensions"]["company"]["score"])
         self.assertEqual(scores["dimensions"]["fit"]["score"], 75.0)
+        self.assertNotIn("面试机会评分", render_report(data))
+        data["assessment"]["show_score"] = True
         self.assertIn("面试机会评分", render_report(data))
         self.assertIn("[F001](#f001)", render_report(data))
 
@@ -128,6 +130,7 @@ class OpportunityScoringTests(unittest.TestCase):
             metric("skills", 4, "F004"),
             metric("preferences", 4, "F004"),
         ]}
+        data["assessment"]["show_score"] = True
         normalized = validate_research(data)
         score = evaluate_assessment(normalized)
         self.assertEqual(score["status"], "scored")
