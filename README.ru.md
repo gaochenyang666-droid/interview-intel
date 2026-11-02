@@ -68,6 +68,33 @@ gemini skills list
 
 В Gemini CLI проверьте список через `/skills list`, обновите его командой `/skills reload` и подтвердите активацию при запросе.
 
+### ИИ-агенты из Китая
+
+Шесть клиентов официально поддерживают навыки с `SKILL.md`: **Qwen Code, Kimi Code CLI, TRAE China, Qoder, Tencent CodeBuddy Code и Zhipu ZCode**. После клонирования репозитория копируйте всю папку со скриптами и справочниками:
+
+```bash
+# Qwen Code
+mkdir -p ~/.qwen/skills && cp -R interview-intel ~/.qwen/skills/interview-intel
+# Kimi Code CLI
+mkdir -p ~/.kimi-code/skills && cp -R interview-intel ~/.kimi-code/skills/interview-intel
+# TRAE (China)
+mkdir -p ~/.trae-cn/skills && cp -R interview-intel ~/.trae-cn/skills/interview-intel
+# Tencent CodeBuddy Code
+mkdir -p ~/.codebuddy/skills && cp -R interview-intel ~/.codebuddy/skills/interview-intel
+# Zhipu ZCode
+mkdir -p ~/.zcode/skills && cp -R interview-intel ~/.zcode/skills/interview-intel
+```
+
+**Qoder:** Работает с `~/.agents/skills/interview-intel/`; также можно импортировать проверенный ZIP через **Extensions → Skills → Add Skills → Upload Skill**.
+
+**Вызов:** Qwen Code: `/interview-intel` или `/skills`; Kimi Code CLI: `/skill:interview-intel`; CodeBuddy Code: `/skills`; ZCode: **Settings → Skills → Refresh**; TRAE: запросите навык в агенте; Qoder: выберите его через `/`.
+
+**Другие пути:** Qwen Code и Kimi Code CLI поддерживают `~/.agents/skills/` и проектные `.qwen/skills/`, `.kimi-code/skills/`. TRAE использует `.trae/skills/`, а папку `.agents/skills/` для проекта нужно включить в настройках. CodeBuddy Code использует `.codebuddy/skills/`.
+
+**Модели и клиенты:** DeepSeek, Doubao, GLM и MiniMax можно использовать через совместимые агенты. Обычное чат-приложение или модель сами по себе не гарантируют поддержку `SKILL.md`. Для полноценной работы нужны веб-поиск и запуск Python.
+
+Официальные документы: [Qwen Code](https://qwenlm.github.io/qwen-code-docs/en/users/features/skills/) · [Kimi Code CLI](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/skills.html) · [TRAE](https://docs.trae.cn/ide_skills?lang=zh) · [Qoder](https://docs.qoder.com/qoder/skills) · [CodeBuddy Code](https://www.codebuddy.cn/docs/cli/skills) · [ZCode](https://zcode.z.ai/en/docs/skill)
+
 ### ChatGPT и Claude в браузере
 
 - **ChatGPT Skills:** В поддерживаемых аккаунтах и рабочих пространствах откройте **Plugins → Skills → Create → Upload from your computer** и загрузите проверенный пакет. Эта установка не связана с локальной установкой Codex. [Документация OpenAI](https://help.openai.com/en/articles/20001066-skills-in-chatgpt).

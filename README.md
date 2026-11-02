@@ -70,6 +70,33 @@ gemini skills list
 
 Inside Gemini CLI, use `/skills list` or `/skills reload` to confirm discovery and approve activation when prompted.
 
+### China-developed AI agents
+
+The following China-developed clients support native Agent Skills based on `SKILL.md`: **Qwen Code, Kimi Code CLI, TRAE China, Qoder, Tencent CodeBuddy Code and Zhipu ZCode**. After cloning the repository as shown above, install its **complete directory** (including scripts and references) in your preferred client:
+
+```bash
+# Qwen Code
+mkdir -p ~/.qwen/skills && cp -R interview-intel ~/.qwen/skills/interview-intel
+# Kimi Code CLI
+mkdir -p ~/.kimi-code/skills && cp -R interview-intel ~/.kimi-code/skills/interview-intel
+# TRAE (China)
+mkdir -p ~/.trae-cn/skills && cp -R interview-intel ~/.trae-cn/skills/interview-intel
+# Tencent CodeBuddy Code
+mkdir -p ~/.codebuddy/skills && cp -R interview-intel ~/.codebuddy/skills/interview-intel
+# Zhipu ZCode
+mkdir -p ~/.zcode/skills && cp -R interview-intel ~/.zcode/skills/interview-intel
+```
+
+**Qoder:** Reuse `~/.agents/skills/interview-intel/`, or import a reviewed ZIP via **Extensions → Skills → Add Skills → Upload Skill**.
+
+**Invoking the Skill:** Qwen Code: `/interview-intel` (or `/skills`); Kimi Code CLI: `/skill:interview-intel`; Tencent CodeBuddy Code: check `/skills`; ZCode: **Settings → Skills → Refresh**; TRAE: ask the Agent to use Interview Intel; Qoder: select through `/`.
+
+**Other supported locations:** Qwen Code: `~/.agents/skills/`, project `.qwen/skills/`; Kimi Code CLI: `~/.agents/skills/`, project `.kimi-code/skills/`; TRAE project `.trae/skills/` (project `.agents/skills/` must be enabled in Settings → Skills & Commands); CodeBuddy Code project `.codebuddy/skills/`.
+
+**Models versus clients:** DeepSeek, Doubao, GLM and MiniMax can be used through agents that support them. The model or consumer chatbot alone does not guarantee `SKILL.md` loading. Full Interview Intel operation still requires live web search and Python execution.
+
+Official documentation: [Qwen Code](https://qwenlm.github.io/qwen-code-docs/en/users/features/skills/) · [Kimi Code CLI](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/skills.html) · [TRAE](https://docs.trae.cn/ide_skills?lang=zh) · [Qoder](https://docs.qoder.com/qoder/skills) · [CodeBuddy Code](https://www.codebuddy.cn/docs/cli/skills) · [ZCode](https://zcode.z.ai/en/docs/skill)
+
 ### ChatGPT and Claude in the browser
 
 - **ChatGPT Skills:** On an eligible ChatGPT workspace, open **Plugins → Skills → Create → Upload from your computer** and upload a reviewed copy of the skill package. Availability depends on account/workspace settings. This is separate from installing a folder for Codex. See [OpenAI's Skills guide](https://help.openai.com/en/articles/20001066-skills-in-chatgpt).

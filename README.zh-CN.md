@@ -68,6 +68,33 @@ gemini skills list
 
 进入 Gemini CLI 后，可以使用 `/skills list` 查看已加载技能，或用 `/skills reload` 刷新。触发技能时按照提示批准激活。
 
+### 中国大陆 AI 开发工具
+
+已核实以下六款中国大陆相关 AI Agent 支持 `SKILL.md`：**通义千问 Qwen Code、月之暗面 Kimi Code CLI、字节跳动 TRAE 中国版、Qoder、腾讯 CodeBuddy Code、智谱 ZCode**。先执行上文的 `git clone`，再将包含脚本及参考资料的完整目录安装到对应位置：
+
+```bash
+# Qwen Code
+mkdir -p ~/.qwen/skills && cp -R interview-intel ~/.qwen/skills/interview-intel
+# Kimi Code CLI
+mkdir -p ~/.kimi-code/skills && cp -R interview-intel ~/.kimi-code/skills/interview-intel
+# TRAE (China)
+mkdir -p ~/.trae-cn/skills && cp -R interview-intel ~/.trae-cn/skills/interview-intel
+# Tencent CodeBuddy Code
+mkdir -p ~/.codebuddy/skills && cp -R interview-intel ~/.codebuddy/skills/interview-intel
+# Zhipu ZCode
+mkdir -p ~/.zcode/skills && cp -R interview-intel ~/.zcode/skills/interview-intel
+```
+
+**Qoder：** 可以直接读取 `~/.agents/skills/interview-intel/`，或在 **Extensions → Skills → Add Skills → Upload Skill** 导入经过审核的 ZIP。
+
+**如何调用：** Qwen Code 使用 `/interview-intel` 或 `/skills`；Kimi Code CLI 使用 `/skill:interview-intel`；腾讯 CodeBuddy Code 使用 `/skills` 检查；ZCode 在 **Settings → Skills → Refresh** 启用；TRAE 在 Agent 对话中指定 Interview Intel；Qoder 输入 `/` 选择技能。
+
+**项目路径与通用目录：** Qwen Code 还支持 `~/.agents/skills/` 与项目 `.qwen/skills/`；Kimi Code CLI 支持 `~/.agents/skills/` 与项目 `.kimi-code/skills/`；TRAE 项目目录为 `.trae/skills/`，要使用项目 `.agents/skills/` 需在“设置 → 技能与命令”启用选项；CodeBuddy Code 项目目录为 `.codebuddy/skills/`。
+
+**关于 DeepSeek、豆包 Doubao、GLM 和 MiniMax：** 它们可作为支持这些模型的 Agent 的底层模型。普通聊天 App 或仅有模型 API 并不保证能够安装 `SKILL.md`；完整研究还需要联网搜索和 Python 执行能力。
+
+官方文档：[Qwen Code](https://qwenlm.github.io/qwen-code-docs/en/users/features/skills/) · [Kimi Code CLI](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/skills.html) · [TRAE](https://docs.trae.cn/ide_skills?lang=zh) · [Qoder](https://docs.qoder.com/qoder/skills) · [CodeBuddy Code](https://www.codebuddy.cn/docs/cli/skills) · [ZCode](https://zcode.z.ai/en/docs/skill)
+
 ### ChatGPT 网页版与 Claude 网页版
 
 - **ChatGPT Skills：** 符合资格的工作区可进入 **Plugins → Skills → Create → Upload from your computer**，上传已检查的 Skill 包。是否显示该入口取决于账户与工作区权限。此流程与 Codex 本地安装相互独立。参见 [ChatGPT 官方说明](https://help.openai.com/en/articles/20001066-skills-in-chatgpt)。
