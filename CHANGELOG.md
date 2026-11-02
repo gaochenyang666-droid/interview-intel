@@ -83,5 +83,5 @@ The format follows Keep a Changelog and the project uses semantic versioning.
 - Login-gated and CAPTCHA-protected sources are intentionally out of scope.
 - Anonymous employee reviews and self-reported salaries cannot support high-confidence company facts.
 
-[0.2.0-beta.1]: https://github.com/gaochenyang666-droid/interview-intel/compare/v0.1.0-beta.1...main
+[0.2.0-beta.1]: https://github.com/gaochenyang666-droid/interview-intel/compare/v0.1.0-beta.1...v0.2.0-beta.1
 [0.1.0-beta.1]: https://github.com/gaochenyang666-droid/interview-intel/releases/tag/v0.1.0-beta.1
