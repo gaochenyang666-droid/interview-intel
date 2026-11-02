@@ -6,9 +6,32 @@
 
 [![自动测试](https://github.com/gaochenyang666-droid/interview-intel/actions/workflows/test.yml/badge.svg)](https://github.com/gaochenyang666-droid/interview-intel/actions/workflows/test.yml) · [Beta 版本](https://github.com/gaochenyang666-droid/interview-intel/releases/tag/v0.1.0-beta.1) · [MIT 许可证](LICENSE)
 
-Interview Intel 是一个可以安装到 AI Agent 的面试研究技能。只需输入**公司名称和岗位**，Agent 就能检索企业官方资料、招聘页面、员工评价、职业社区、薪酬线索与公开面经，并根据可验证的职业资料研究指定 HR 或面试官，最终生成**带原始链接和可信度说明的中文报告**。
+Interview Intel 是一个可以安装到 AI Agent 的面试研究技能。只需输入**公司、岗位或面试官中的至少一项**，Agent 就能检索企业官方资料、招聘页面、员工评价、职业社区、薪酬线索与公开面经，并根据可验证的职业资料研究指定 HR 或面试官，最终生成**带原始链接和可信度说明的中文报告**。
 
 > **当前版本：v0.1.0-beta.1（公开测试版）。** 联网搜索由宿主 Agent 的搜索或浏览器工具完成；仓库中的 Python 脚本负责生成检索计划、校验证据、去重与渲染报告，**脚本本身不会自动抓取网页**。
+
+## 最简单的使用方法：只填四项
+
+在已安装 Interview Intel 的 AI Agent 中直接输入：
+
+```text
+国家：中国
+公司：字节跳动
+岗位：产品运营
+面试官：0
+```
+
+**不知道就填 `0`，自动跳过对应信息。** 国家为 `0` 时开展全球搜索；公司为 `0` 时研究通用岗位或面试官；岗位为 `0` 时仅研究公司或面试官；面试官为 `0` 时跳过个人研究。无需额外填写简历、JD、个人背景、技能或偏好。**公司、岗位、面试官至少提供一项**，四项全为 `0` 无法启动研究。
+
+评分会根据实际证据自动生成；没有个人背景时，个人匹配度显示**未评分**，`0` 绝不代表零分。
+
+命令行同样支持四字段快捷输入：
+
+```bash
+python3 scripts/interview_intel.py quick "中国/字节跳动/产品运营/0" --output request.json
+```
+
+随后由 Agent 执行联网研究并生成报告。上述命令仅创建输入 JSON。
 
 ## 能帮你解决什么？
 
@@ -126,7 +149,7 @@ mkdir -p ~/.zcode/skills && cp -R interview-intel ~/.zcode/skills/interview-inte
 重点：团队文化、面试流程、加班情况、薪资和职业发展
 ```
 
-**只需要公司名称和岗位。** 其他字段可选。无论使用哪种语言输入，当前报告渲染器默认输出**简体中文**。
+**公司、岗位、面试官至少提供一项即可。** 其他字段可选。无论使用哪种语言输入，当前报告渲染器默认输出**简体中文**。
 
 **各平台官方文档：** [Codex](https://learn.chatgpt.com/docs/build-skills) · [Claude Code](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) · [Gemini CLI](https://geminicli.com/docs/cli/skills/) · [Cursor](https://cursor.com/docs/skills) · [Copilot](https://docs.github.com/en/copilot/concepts/customizations/agent-skills) · [OpenCode](https://opencode.ai/docs/skills) · [Windsurf / Devin Desktop](https://docs.devinai.cn/desktop/cascade/skills)
 

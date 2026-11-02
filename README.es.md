@@ -10,6 +10,25 @@
 
 > **Estado: beta pública v0.1.0-beta.1.** El agente anfitrión realiza las búsquedas y consulta las páginas públicas. Los scripts de Python generan planes, validan pruebas y redactan el informe; **no rastrean sitios web por sí solos**.
 
+## Inicio rápido: solo cuatro datos
+
+Escribe estos cuatro campos en cualquier agente compatible:
+
+```text
+País: China
+Empresa: ByteDance
+Puesto: Product Operations
+Entrevistador: 0
+```
+
+**Escribe `0` cuando desconozcas un dato.** El agente lo omite automáticamente: país desconocido implica búsqueda global; sin empresa se investiga el puesto o la persona; sin puesto se estudia la empresa o la persona; sin entrevistador se omite la investigación personal. No se requiere CV, oferta, experiencia ni preferencias. **Se necesita al menos una empresa, un puesto o un entrevistador.** La ausencia de datos personales deja la adecuación del candidato **sin puntuar**.
+
+```bash
+python3 scripts/interview_intel.py quick "China/ByteDance/Product Operations/0" --output request.json
+```
+
+El comando solo genera los datos de entrada. Después, el agente realiza la investigación web.
+
 ## Funcionalidades
 
 | Necesidad | Qué analiza |
@@ -126,7 +145,7 @@ Experiencia: C#, sistemas distribuidos, Azure
 Prioridades: entrevista técnica, equipo, salario
 ```
 
-**Solo son obligatorios empresa y puesto.** Actualmente, el informe final se genera en **chino simplificado**.
+**Basta con indicar empresa, puesto o entrevistador.** Actualmente, el informe final se genera en **chino simplificado**.
 
 **Documentación de plataformas:** [Codex](https://learn.chatgpt.com/docs/build-skills) · [Claude Code](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) · [Gemini CLI](https://geminicli.com/docs/cli/skills/) · [Cursor](https://cursor.com/docs/skills) · [Copilot](https://docs.github.com/en/copilot/concepts/customizations/agent-skills) · [OpenCode](https://opencode.ai/docs/skills) · [Windsurf / Devin Desktop](https://docs.devinai.cn/desktop/cascade/skills)
 

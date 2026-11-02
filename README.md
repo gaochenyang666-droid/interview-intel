@@ -10,6 +10,27 @@ Prepare for an interview with more context than a job description. **Interview I
 
 > **Public beta: v0.1.0-beta.1.** The Skill uses the **host agent's web search/browser tools** for live research. The included Python scripts plan queries, validate evidence, and render reports; they **do not independently crawl websites**.
 
+## Quick start: just four fields
+
+Paste these four lines into any supported Agent with Interview Intel installed:
+
+```text
+Country: China
+Company: ByteDance
+Role: Product Operations
+Interviewer: 0
+```
+
+**Use `0` for any unknown field.** The Agent automatically skips it. Country `0` means global search; company `0` means general role/interviewer research; role `0` means company/interviewer research; interviewer `0` skips person research. No résumé, job URL, skills or preferences are required to start. **At least one of company, role or interviewer must be supplied.** Missing candidate details leave personal-fit ratings unscored.
+
+For CLI users:
+
+```bash
+python3 scripts/interview_intel.py quick "China/ByteDance/Product Operations/0" --output request.json
+```
+
+The Agent then performs the web research and generates the report. This command only builds the input JSON.
+
 ## What can it help with?
 
 | Question | What the report covers |
@@ -128,7 +149,7 @@ My background: C#, distributed systems, Azure, testing
 Focus: interview process, team culture, system design and compensation
 ```
 
-**Only company and role are required.** Country, job URL, named interviewer, interview stage and candidate experience are optional. The current report renderer outputs **Simplified Chinese**, regardless of the language of these installation instructions.
+**Only one of company, role or interviewer is required.** Country, job URL, named interviewer, interview stage and candidate experience are optional. The current report renderer outputs **Simplified Chinese**, regardless of the language of these installation instructions.
 
 **Official setup references:** [Codex](https://learn.chatgpt.com/docs/build-skills) · [Claude Code](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) · [Gemini CLI](https://geminicli.com/docs/cli/skills/) · [Cursor](https://cursor.com/docs/skills) · [Copilot](https://docs.github.com/en/copilot/concepts/customizations/agent-skills) · [OpenCode](https://opencode.ai/docs/skills) · [Windsurf / Devin Desktop](https://docs.devinai.cn/desktop/cascade/skills)
 

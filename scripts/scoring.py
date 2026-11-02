@@ -54,7 +54,9 @@ def validate_assessment(data: dict[str, Any], issues: list[str]) -> None:
         return
     if data.get("research", {}).get("network_status") not in {"available", "partial"}:
         issues.append("网络不可用时不得生成机会评分")
-    if data.get("research", {}).get("entity", {}).get("status") != "confirmed":
+    company_name = data.get("request", {}).get("company", {}).get("name")
+    entity_status = data.get("research", {}).get("entity", {}).get("status")
+    if company_name and entity_status != "confirmed":
         issues.append("公司实体未确认时不得生成机会评分")
     findings = {f.get("id"): f for f in data.get("findings", []) if isinstance(f, dict)}
     seen: set[str] = set()
@@ -69,6 +71,10 @@ def validate_assessment(data: dict[str, Any], issues: list[str]) -> None:
             continue
         if key in seen:
             issues.append(f"{prefix}.key 重复: {key}")
+        if not company_name and RUBRIC[key]["dimension"] == "company":
+            issues.append(f"{prefix} 未提供公司时不得对公司评分")
+        if not data.get("request", {}).get("role", {}).get("title") and RUBRIC[key]["dimension"] in {"role", "fit"}:
+            issues.append(f"{prefix} 未提供岗位时不得对岗位或个人匹配评分")
         seen.add(key)
         rating = metric.get("rating")
         if type(rating) is not int or not 1 <= rating <= 5:

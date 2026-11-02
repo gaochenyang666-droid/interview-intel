@@ -1,6 +1,6 @@
 # Input schema
 
-The CLI accepts UTF-8 JSON. Only `company.name` and `role.title` are required.
+The CLI accepts UTF-8 JSON. For quick natural-language or CLI input, use **country / company / role / interviewer**, with `0` for unknowns. At least one of company, role or interviewer must be provided. The country may be `0` for global research. The advanced JSON interface remains available.
 
 ```json
 {
@@ -40,6 +40,27 @@ The CLI accepts UTF-8 JSON. Only `company.name` and `role.title` are required.
   }
 }
 ```
+
+## Quick input
+
+Four lines work directly in an Agent chat:
+
+```text
+国家：中国
+公司：字节跳动
+岗位：产品运营
+面试官：0
+```
+
+The Agent automatically skips any field containing `0`. Use the CLI to create a normalized JSON request:
+
+```bash
+python3 scripts/interview_intel.py quick "中国/字节跳动/产品运营/0" --output request.json
+```
+
+Alternatively use `quick --country CN --company 字节跳动 --role 产品运营 --interviewer 0 --output request.json`; or supply four named lines as a quoted input string. `quick --plan` emits the corresponding research plan. This CLI does not make network requests; the Agent performs live research after planning.
+
+For partial requests: if company is `0`, company conclusions are skipped; if role is `0`, job analysis and mock questions are skipped; if interviewer is `0`, professional-person research is skipped. Country `0` triggers a global search. An all-zero request has no research subject and is rejected. Optional candidate background and personal preferences never block research or company/role-level scoring.
 
 ## Field behavior
 

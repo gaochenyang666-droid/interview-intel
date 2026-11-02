@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -40,7 +41,7 @@ def _write_or_print(text: str, output: str | None) -> None:
 def _plan_markdown(plan: dict) -> str:
     request = plan["request"]
     lines = [
-        f"# {request['company']['name']} · {request['role']['title']} 研究计划",
+        f"# {request['company']['name'] or '公司未指定'} · {request['role']['title'] or '岗位未指定'} 研究计划",
         "",
         f"- 国家或地区：{plan.get('country_code') or '全球'}",
         f"- 计划语言：{', '.join(plan['languages_planned'])}",
@@ -60,6 +61,64 @@ def _plan_markdown(plan: dict) -> str:
         lines.extend(["", "## 注意事项", ""])
         lines.extend(f"- {item}" for item in plan["warnings"])
     return "\n".join(lines) + "\n"
+
+
+
+def _quick_request(args: argparse.Namespace) -> dict:
+    """Four user-facing slots; 0 or omitted means skip that dimension."""
+    fields = {
+        "country": args.country or "0",
+        "company": args.company or "0",
+        "role": args.role or "0",
+        "interviewer": args.interviewer or "0",
+    }
+    if args.input:
+        raw = args.input.strip()
+        names = ["country", "company", "role", "interviewer"]
+        if "\n" in raw or "：" in raw or (":" in raw and "/" not in raw):
+            aliases = {
+                "国家": "country", "country": "country", "地区": "country",
+                "公司": "company", "company": "company",
+                "岗位": "role", "职位": "role", "role": "role", "position": "role",
+                "面试官": "interviewer", "hr": "interviewer", "interviewer": "interviewer",
+            }
+            for row in raw.splitlines():
+                line = row.strip()
+                if not line:
+                    continue
+                match = re.fullmatch(r"([^：:]+)[：:]\s*(.*)", line)
+                if not match:
+                    raise ValueError(f"四行模式无法识别：{line}")
+                label = aliases.get(match.group(1).strip().casefold())
+                if not label:
+                    raise ValueError(f"不支持的字段：{match.group(1)}")
+                fields[label] = match.group(2).strip() or "0"
+        else:
+            parts = [item.strip() or "0" for item in raw.split("/")]
+            if len(parts) != 4:
+                raise ValueError("快捷输入应为四段：国家/公司/岗位/面试官，如 中国/字节跳动/产品运营/0")
+            fields.update(dict(zip(names, parts)))
+    def value(name: str) -> str | None:
+        item = fields[name].strip()
+        return None if item == "0" or not item else item
+
+    request = {
+        "quick_mode": True,
+        "company": {"name": value("company")},
+        "role": {"title": value("role")},
+        "location": {"country": value("country")},
+        "interviewers": ([{"name": value("interviewer")}] if value("interviewer") else []),
+    }
+    return request
+
+
+def cmd_quick(args: argparse.Namespace) -> int:
+    """Create a normalized minimal request or search plan; the host agent searches online."""
+    request = _quick_request(args)
+    plan = build_plan(request, network_status=args.network_status)
+    value = plan if args.plan else plan["request"]
+    _write_or_print(json.dumps(value, ensure_ascii=False, indent=2) + "\n", args.output)
+    return 0
 
 
 def cmd_plan(args: argparse.Namespace) -> int:
@@ -127,6 +186,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--version", action="version", version=f"Interview Intel {PRODUCT_VERSION}")
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    quick = subparsers.add_parser("quick", help="Start with country/company/role/interviewer; 0 skips unknowns")
+    quick.add_argument("input", nargs="?", help="国家/公司/岗位/面试官 or four named lines")
+    quick.add_argument("--country", default="0")
+    quick.add_argument("--company", default="0")
+    quick.add_argument("--role", default="0")
+    quick.add_argument("--interviewer", default="0")
+    quick.add_argument("--plan", action="store_true", help="Output a research plan instead of normalized input")
+    quick.add_argument("--network-status", default="unknown", choices=["available", "partial", "unavailable", "failed", "unknown"])
+    quick.add_argument("--output", "-o")
+    quick.set_defaults(func=cmd_quick)
 
     plan = subparsers.add_parser("plan", help="Build a multilingual search and source-routing plan")
     plan.add_argument("request", help="Input request JSON")

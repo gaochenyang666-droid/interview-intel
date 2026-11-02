@@ -127,9 +127,20 @@ def _require_text(value: Any, label: str, issues: list[str]) -> str | None:
     return " ".join(value.split())
 
 
+def _skip_value(value: Any) -> bool:
+    """A user-supplied zero means unknown, never the literal entity '0'."""
+    return value is None or value == 0 or (isinstance(value, str) and value.strip() in {"", "0"})
+
+
+def _optional_target(value: Any, label: str, issues: list[str]) -> str | None:
+    if _skip_value(value):
+        return None
+    return _require_text(value, label, issues)
+
+
 def _normalize_country(value: Any, profiles: dict[str, Any]) -> tuple[str | None, list[str]]:
     warnings: list[str] = []
-    if value is None or value == "":
+    if _skip_value(value):
         return None, warnings
     if not isinstance(value, str):
         return None, ["location.country 不是字符串，已回退到全球路线"]
@@ -153,17 +164,19 @@ def normalize_request(request: dict[str, Any]) -> tuple[dict[str, Any], list[str
 
     company = request.get("company")
     role = request.get("role")
+    if _skip_value(company):
+        company = {}
+    if _skip_value(role):
+        role = {}
     if not isinstance(company, dict):
-        issues.append("company 必须是对象")
+        issues.append("company 必须是对象或 0")
         company = {}
     if not isinstance(role, dict):
-        issues.append("role 必须是对象")
+        issues.append("role 必须是对象或 0")
         role = {}
 
-    company_name = _require_text(company.get("name"), "company.name", issues)
-    role_title = _require_text(role.get("title"), "role.title", issues)
-    if issues:
-        raise IntelValidationError(issues)
+    company_name = _optional_target(company.get("name"), "company.name", issues)
+    role_title = _optional_target(role.get("title"), "role.title", issues)
 
     location = request.get("location") if isinstance(request.get("location"), dict) else {}
     country, warnings = _normalize_country(location.get("country"), load_country_profiles())
@@ -177,10 +190,8 @@ def normalize_request(request: dict[str, Any]) -> tuple[dict[str, Any], list[str
         if not isinstance(person, dict):
             warnings.append(f"第 {index} 位面试官不是对象，已忽略")
             continue
-        name = _require_text(person.get("name"), f"interviewers[{index - 1}].name", issues) if person.get("name") else None
-        if person.get("name") and not name:
-            continue
-        if not name and not person.get("profile_url"):
+        name = _optional_target(person.get("name"), f"interviewers[{index - 1}].name", issues)
+        if not name and _skip_value(person.get("profile_url")):
             warnings.append(f"第 {index} 位面试官缺少姓名和公开主页，已忽略")
             continue
         cleaned_interviewers.append(
@@ -191,6 +202,11 @@ def normalize_request(request: dict[str, Any]) -> tuple[dict[str, Any], list[str
                 "profile_url": _clean_optional(person.get("profile_url")),
             }
         )
+
+    if not (company_name or role_title or cleaned_interviewers):
+        issues.append("国家之外至少需要公司、岗位或面试官中的一项；全部填写 0 无法开展研究")
+    if issues:
+        raise IntelValidationError(issues)
 
     candidate = request.get("candidate") if isinstance(request.get("candidate"), dict) else {}
     research = request.get("research") if isinstance(request.get("research"), dict) else {}
@@ -222,6 +238,7 @@ def normalize_request(request: dict[str, Any]) -> tuple[dict[str, Any], list[str
             "skills": _clean_string_list(candidate.get("skills")),
             "preferences": _clean_string_list(candidate.get("preferences")),
         },
+        "quick_mode": bool(request.get("quick_mode", False)),
         "focus": _clean_string_list(request.get("focus")),
         "research": {
             "max_queries": research.get("max_queries"),
@@ -235,7 +252,7 @@ def normalize_request(request: dict[str, Any]) -> tuple[dict[str, Any], list[str
 
 
 def _clean_optional(value: Any, collapse: bool = True) -> str | None:
-    if not isinstance(value, str) or not value.strip():
+    if _skip_value(value) or not isinstance(value, str):
         return None
     return " ".join(value.split()) if collapse else value.strip()
 
@@ -269,74 +286,76 @@ def _query(
 
 
 def build_queries(request: dict[str, Any], country_code: str | None) -> list[dict[str, Any]]:
+    """Skip searches that require missing targets; still search English and local languages."""
     profiles = load_country_profiles()
     profile = profiles["countries"].get(country_code, profiles["default"]) if country_code else profiles["default"]
-    company = request["company"]["name"]
-    role = request["role"]["title"]
+    company = request["company"].get("name")
+    role = request["role"].get("title")
     city = request["location"].get("city")
     industry = request["company"].get("industry")
     catalog = load_source_catalog()
-    active_source_ids = {
-        source["id"]
-        for source in catalog["sources"]
-        if source.get("status") != "retired"
-    }
-    platforms = [
-        platform
-        for platform in profile.get("platforms", [])
-        if platform in active_source_ids
-    ]
-    local_languages = profile.get("languages", ["en"])
-    requested = request["research"].get("languages", [])
+    active_ids = {item["id"] for item in catalog["sources"] if item.get("status") != "retired"}
+    platforms = [p for p in profile.get("platforms", []) if p in active_ids]
     languages: list[str] = []
-    for language in ["en", *local_languages, *requested]:
-        if language not in languages:
-            languages.append(language)
-
-    location_suffix = " ".join(item for item in [company, city] if item)
+    for lang in ["en", *profile.get("languages", ["en"]), *request["research"].get("languages", [])]:
+        if lang not in languages:
+            languages.append(lang)
     queries: list[dict[str, Any]] = []
-    queries.append(_query("en", "company_official", f'{_quote(company)} official website investor relations', 100, ["linkedin"], "确认公司实体、官网和官方披露"))
-    queries.append(_query("en", "company_jobs", f'{_quote(company)} careers {_quote(role)} job', 98, platforms, "寻找当前或近期同岗位 JD"))
-    queries.append(_query("en", "role_interview", f'{_quote(company)} {_quote(role)} interview experience questions', 96, ["glassdoor", "reddit", "youtube", "blind"], "收集岗位面经和常见轮次"))
-    queries.append(_query("en", "company_reviews", f'{location_suffix} employee reviews salary culture layoffs', 94, platforms, "收集员工评价、薪酬和近期状态"))
-    queries.append(_query("en", "role_market", f'{_quote(company)} {_quote(role)} salary level compensation', 90, ["levels-fyi", "glassdoor", "indeed"], "获取带职级与地区条件的薪酬观察"))
-    queries.append(_query("en", "company_recent", f'{_quote(company)} latest results layoffs hiring news', 88, ["news_search", "youtube"], "核验近期经营和招聘变化"))
-    queries.append(_query("en", "company_culture", f'{_quote(company)} {_quote(role)} work life balance promotion management', 82, ["glassdoor", "reddit", "blind", "fishbowl"], "补充制度、晋升与工作压力评价"))
-    if industry:
-        queries.append(_query("en", "company_context", f'{_quote(company)} {_quote(industry)} competitors business model', 76, ["news_search"], "理解业务背景和岗位所处环境"))
-
+    location_part = " ".join(x for x in [company, city] if x)
+    if company:
+        queries.append(_query("en", "company_official", f'{_quote(company)} official website investor relations', 100, ["linkedin"], "确认公司实体与官方披露"))
+        queries.append(_query("en", "company_reviews", f'{location_part} employee reviews salary culture layoffs', 94, platforms, "收集雇主评价与薪酬情况"))
+        queries.append(_query("en", "company_recent", f'{_quote(company)} latest results layoffs hiring news', 88, ["news_search"], "核验近期经营和招聘变化"))
+        if industry:
+            queries.append(_query("en", "company_context", f'{_quote(company)} {_quote(industry)} business model competitors', 76, ["news_search"], "了解业务背景"))
+    if role:
+        contextual = " ".join(x for x in [f'"{company}"' if company else None, f'"{role}"', city] if x)
+        queries.append(_query("en", "company_jobs" if company else "role_jobs",
+                              f'{contextual} careers job opening responsibilities', 98, platforms, "查询公开岗位职责与要求"))
+        queries.append(_query("en", "role_interview", f'{contextual} interview experience questions', 96,
+                              ["glassdoor", "reddit", "youtube", "blind"], "收集岗位面试流程和问题"))
+        queries.append(_query("en", "role_market", f'{contextual} salary level compensation benchmark', 90,
+                              ["levels-fyi", "glassdoor", "indeed"], "了解薪酬区间及适用地点"))
+        if company:
+            queries.append(_query("en", "company_culture", f'{contextual} work life balance promotion management', 82,
+                                  ["glassdoor", "reddit", "blind"], "查找团队工作体验"))
     for person in request.get("interviewers", []):
         name = person.get("name")
-        person_title = person.get("title")
-        department = person.get("department")
+        title = person.get("title")
         if name:
-            context = " ".join(item for item in [company, person_title, department] if item)
-            queries.append(_query("en", "interviewer_identity", f'{_quote(name)} {_quote(company)} {_quote(person_title)} professional profile', 97, ["linkedin", "x", "github"], "匹配面试官身份与公开职业背景"))
-            queries.append(_query("en", "interviewer_public_work", f'{_quote(name)} {_quote(company)} interview hiring talk article project', 85, ["github", "youtube", "x"], "寻找本人公开文章、演讲和招聘观点"))
+            context = " ".join(x for x in [name, company, title, person.get("department")] if x)
+            queries.append(_query("en", "interviewer_identity", f'{_quote(context)} professional profile employer', 97,
+                                  ["linkedin", "github"], "核验职业身份和履历"))
+            queries.append(_query("en", "interviewer_public_work", f'{_quote(name)} {_quote(company)} articles speaking professional work', 85,
+                                  ["github", "youtube", "x"], "查找公开专业观点"))
         elif person.get("profile_url"):
-            queries.append(_query("en", "interviewer_identity", f'{person["profile_url"]} current role employer', 97, ["linkedin", "github", "x"], "核验用户提供的公开主页"))
-
-    local_terms = profile.get("local_terms", [])
+            queries.append(_query("en", "interviewer_identity", f'{person["profile_url"]} employment role', 97,
+                                  ["linkedin", "github"], "核验公开资料"))
     for language in languages:
         if language == "en":
             continue
-        term_text = " ".join(local_terms[:4])
-        queries.append(_query(language, "local_company_role", f'{_quote(company)} {_quote(role)} {term_text}', 92, platforms, "本地语言检索公司与岗位评价"))
-        queries.append(_query(language, "local_interview", f'{_quote(company)} {_quote(role)} {term_text}', 89, platforms, "本地语言检索面经"))
-        if city:
-            queries.append(_query(language, "local_location", f'{_quote(company)} {_quote(city)} {_quote(role)} {term_text}', 84, platforms, "核对城市和部门层面的差异"))
+        terms = " ".join(profile.get("local_terms", [])[:4])
+        target = " ".join(x for x in [company, role, city] if x)
+        if target:
+            category = "local_company_role" if company and role else "local_target"
+            queries.append(_query(language, category, f'{_quote(target)} {terms}', 92, platforms,
+                                  "使用当地语言查找岗位、企业及社区信息"))
+            if role:
+                queries.append(_query(language, "local_interview", f'{_quote(target)} {terms} interview', 89, platforms,
+                                      "使用当地语言查找面试经验"))
         for person in request.get("interviewers", []):
             if person.get("name"):
-                queries.append(_query(language, "local_interviewer", f'{_quote(person["name"])} {_quote(company)} {_quote(person.get("title"))} {term_text}', 80, ["linkedin", "x", "github"], "本地语言检索面试官公开资料"))
-
-    de_duplicated: list[dict[str, Any]] = []
+                queries.append(_query(language, "local_interviewer",
+                                      f'{_quote(person["name"])} {_quote(company)} {terms}', 80, ["linkedin", "github"],
+                                      "本地语言核验公开职业资料"))
     seen: set[tuple[str, str]] = set()
+    de_duplicated: list[dict[str, Any]] = []
     for item in sorted(queries, key=lambda q: (-q["priority"], q["language"])):
-        key = (item["language"], item["query"].casefold())
+        key = item["language"], item["query"].casefold()
         if key not in seen:
             seen.add(key)
             de_duplicated.append(item)
-    for index, item in enumerate(de_duplicated, start=1):
+    for index, item in enumerate(de_duplicated, 1):
         item["id"] = f"Q{index:03d}"
     return de_duplicated
 
@@ -444,9 +463,10 @@ def build_plan(request: dict[str, Any], max_queries: int | None = None, network_
         supplied_identifiers.append("公司官网")
     if normalized["role"].get("url"):
         supplied_identifiers.append("岗位链接")
-    entity_status = "probable" if supplied_identifiers else "unverified"
+    entity_status = ("not_applicable" if not normalized["company"]["name"] else
+                     "probable" if supplied_identifiers else "unverified")
     questions: list[str] = []
-    if not supplied_identifiers and not country_code:
+    if normalized["company"]["name"] and not supplied_identifiers and not country_code:
         questions.append("若搜索结果中出现多个同名雇主，需确认公司官网或岗位链接后再归因。")
     interviewer_warnings = []
     for person in normalized["interviewers"]:
@@ -462,7 +482,8 @@ def build_plan(request: dict[str, Any], max_queries: int | None = None, network_
             "search_completed_at": "YYYY-MM-DD",
             "languages_attempted": [],
             "entity": {
-                "status": "probable" if supplied_identifiers else "ambiguous",
+                "status": ("not_applicable" if not normalized["company"]["name"] else
+                           "probable" if supplied_identifiers else "ambiguous"),
                 "name": normalized["company"]["name"],
                 "basis": " | ".join(supplied_identifiers) or "",
             },
@@ -785,8 +806,10 @@ def validate_research(data: dict[str, Any], warnings_out: list[str] | None = Non
                 + ", ".join(expected_local)
             )
     entity = research.get("entity")
-    if not isinstance(entity, dict) or entity.get("status") not in {"confirmed", "probable", "ambiguous", "not_found"}:
+    if not isinstance(entity, dict) or entity.get("status") not in {"confirmed", "probable", "ambiguous", "not_found", "not_applicable"}:
         issues.append("research.entity.status 无效")
+    elif entity.get("status") == "not_applicable" and normalized_data.get("request", {}).get("company", {}).get("name"):
+        issues.append("提供公司名称时不得使用 not_applicable 实体状态")
     elif entity.get("status") in {"ambiguous", "not_found"}:
         claim_findings = [
             finding.get("id", f"index-{index}")
@@ -951,7 +974,7 @@ def validate_research(data: dict[str, Any], warnings_out: list[str] | None = Non
     if not isinstance(prep, dict):
         issues.append("interview_prep 必须是对象")
         prep = {}
-    if network_status in {"available", "partial"}:
+    if network_status in {"available", "partial"} and normalized_data.get("request", {}).get("role", {}).get("title"):
         questions = prep.get("mock_questions", [])
         if not isinstance(questions, list) or len(questions) != 10:
             issues.append("可用网络状态下 interview_prep.mock_questions 必须正好有 10 个问题")
@@ -1042,7 +1065,9 @@ def render_report(data: dict[str, Any]) -> str:
                 "",
             ]
         )
-        for _, title in SECTION_ORDER:
+        for key, title in SECTION_ORDER:
+            if request.get("quick_mode") and ((key in {"company", "reviews"} and not request.get("company", {}).get("name")) or (key in {"role", "prep"} and not request.get("role", {}).get("title")) or (key == "interviewer" and not request.get("interviewers"))):
+                continue
             lines.extend([f"## {title}", "", "未找到可靠公开证据。", ""])
         lines.extend(["## 6. 来源与可信度", "", "本次未采集任何在线来源。", ""])
         return "\n".join(lines).rstrip() + "\n"
@@ -1099,6 +1124,13 @@ def render_report(data: dict[str, Any]) -> str:
     lines.append("")
 
     for section_key, title in SECTION_ORDER:
+        if request.get("quick_mode"):
+            if section_key in {"company", "reviews"} and not request.get("company", {}).get("name"):
+                continue
+            if section_key in {"role", "prep"} and not request.get("role", {}).get("title"):
+                continue
+            if section_key == "interviewer" and not request.get("interviewers"):
+                continue
         lines.extend([f"## {title}", ""])
         section_findings = by_section.get(section_key, [])
         if section_findings:

@@ -1,4 +1,4 @@
 interface:
   display_name: "Interview Intel"
   short_description: "Global, source-graded Chinese interview intelligence"
-  default_prompt: "Research this company, role, and any named interviewer from public sources. Produce a cited Chinese interview intelligence report and identify the remaining gaps."
+  default_prompt: "Ask for country/company/role/interviewer only. Treat 0 as unknown and skip that field. Research the remaining targets from public sources, then produce a cited Chinese interview intelligence report with evidence-backed scoring when possible."

@@ -1,6 +1,6 @@
 # Chinese report specification
 
-The renderer must always produce these sections in this order:
+For the legacy/complete input, the renderer keeps the following sections in order. For `quick_mode: true`, numbered sections that depend on a skipped `0` field are omitted: no company skips company/reviews, no role skips role/preparation, and no interviewer skips interviewer information. The summary and source section remain.
 
 1. `一页式摘要`
 2. `1. 公司概况与综合评价`

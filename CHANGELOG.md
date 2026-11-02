@@ -6,6 +6,13 @@ The format follows Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- Added optional four-field quick input: country / company / role / interviewer, with `0` meaning skip.
+- Added a `quick` CLI command and target-aware search planning. Missing interviewer, role or company sections are omitted in quick-mode reports, while full legacy reports retain their structure.
+- Personal-fit scores remain unscored unless candidate background is supplied.
+
+
 ### Added
 
 - Optional evidence-driven opportunity scoring: seven fixed metrics, weighted company/role/candidate-fit dimensions, source-quality labels and coverage-aware suppression.

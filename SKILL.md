@@ -8,7 +8,29 @@ metadata:
 
 # Interview Intel
 
-Produce an evidence-led Chinese interview intelligence report from public sources. The minimum input is a company name and role title. Location, job URL or description, interviewer details, candidate background, and focus questions are optional. Start research with incomplete input; ask for confirmation only when unresolved company entities would materially mix results.
+Produce an evidence-led Chinese interview intelligence report from public sources. The easiest input has four fields: country, company, role, interviewer. Enter `0` for any unknown field and skip its dependent research; at least one of company, role, or interviewer is needed. A missing company allows general role research, a missing role allows employer research, and a missing interviewer skips the personal research. Candidate background, job URL, and preferences are optional and should never be requested by default. Location, job URL or description, interviewer details, candidate background, and focus questions are optional. Start research with incomplete input; ask for confirmation only when unresolved company entities would materially mix results.
+
+## Four-field quick start (preferred)
+
+Accept this directly in natural-language chat with no JSON or extra questions:
+
+```text
+国家：中国
+公司：字节跳动
+岗位：产品运营
+面试官：0
+```
+
+`0` means **unknown / skip this field**, not a zero score. Country `0`: search globally. Company `0`: skip company-specific conclusions and search available role or interviewer information. Role `0`: skip role-specific conclusions and mock questions. Interviewer `0`: do not research a person. Missing candidate background and preferences: omit personal-match ratings. If company, role, and interviewer are all `0`, request at least one research subject.
+
+When the local CLI is available, create the normalized request from one shorthand string or four lines:
+
+```bash
+python3 scripts/interview_intel.py quick "中国/字节跳动/产品运营/0" --output request.json
+python3 scripts/interview_intel.py plan request.json --format json --output research-plan.json
+```
+
+Then perform live public-source research with the host agent, populate and validate evidence, and render the report. The `quick` command creates the request/plan; it does **not** browse the web or produce verified company findings on its own. Ignore missing fields throughout the workflow and do not ask for a resume or job link to begin.
 
 ## Operating rules
 
@@ -25,7 +47,7 @@ Produce an evidence-led Chinese interview intelligence report from public source
 
 ## Workflow
 
-1. Convert the request into the JSON shape in [references/input-schema.md](references/input-schema.md).
+1. Convert the four-field chat request into the JSON shape in [references/input-schema.md](references/input-schema.md), using `quick` if useful. Treat every `0` as omitted and skip corresponding research. Advanced JSON requests remain supported.
 2. Run the planner:
 
    ```bash
@@ -34,7 +56,7 @@ Produce an evidence-led Chinese interview intelligence report from public source
 
    Read `references/source-catalog.json` only when the route needs explanation, a source needs extension, or access constraints matter. Read the matching profile in `references/country-profiles.json` for the requested country.
 
-3. Resolve the company entity before collecting company-specific evidence. Prefer the supplied official site or job URL. Otherwise open official company, careers, filing, or verified social pages. If several plausible entities remain, collect disambiguation clues and stop attribution until the user identifies the employer.
+3. If a company was supplied, resolve its entity before collecting company-specific evidence. If the company is omitted, skip company research and continue with role/interviewer targets. Prefer the supplied official site or job URL. Otherwise open official company, careers, filing, or verified social pages. If several plausible entities remain, collect disambiguation clues and stop attribution until the user identifies the employer.
 4. Execute the planned searches in priority order. Use English first. For each non-English country, also run at least one local-language company query and one local-language employee, salary, or interview query. Preserve the original language and an accessible URL for each adopted source.
 5. For each candidate page, open it and record the exact page type, publication date if visible, retrieval date, a short original-language excerpt, the claim it supports, and access limitations. A blocked or unavailable page cannot support a finding beyond the fact that it was inaccessible.
 6. Find interviewer material only when a name, public profile URL, or strong role/company context is supplied. Confirm identity through at least two compatible public attributes. A shared name alone is a disambiguation lead, never an identity confirmation.

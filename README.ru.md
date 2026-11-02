@@ -10,6 +10,25 @@
 
 > **Статус: публичная бета v0.1.0-beta.1.** Поиск и открытие сайтов выполняет ИИ-агент, в котором установлен навык. Скрипты Python формируют план, проверяют доказательства и создают отчёт; **сами сайты они не обходят**.
 
+## Быстрый старт: всего четыре поля
+
+Отправьте агенту с установленным Interview Intel:
+
+```text
+Страна: Китай
+Компания: ByteDance
+Должность: Product Operations
+Интервьюер: 0
+```
+
+**Если данные неизвестны, укажите `0`.** Агент пропустит соответствующий пункт: при неизвестной стране выполнит глобальный поиск, при отсутствии компании исследует вакансию или интервьюера, без должности изучит компанию или человека, без интервьюера пропустит его исследование. Резюме, вакансия, опыт и предпочтения необязательны. **Нужно указать хотя бы компанию, должность или интервьюера.** Без данных кандидата соответствие личным требованиям останется **без оценки**.
+
+```bash
+python3 scripts/interview_intel.py quick "China/ByteDance/Product Operations/0" --output request.json
+```
+
+Команда только создаёт файл входных данных; веб-поиск выполняет агент.
+
 ## Возможности
 
 | Задача | Что исследуется |
@@ -126,7 +145,7 @@ mkdir -p ~/.zcode/skills && cp -R interview-intel ~/.zcode/skills/interview-inte
 Приоритеты: техническое интервью, культура команды, зарплата
 ```
 
-**Обязательны только компания и должность.** Текущий формат итогового отчёта: **Markdown на упрощённом китайском языке**.
+**Достаточно указать компанию, должность или интервьюера.** Текущий формат итогового отчёта: **Markdown на упрощённом китайском языке**.
 
 **Официальные инструкции:** [Codex](https://learn.chatgpt.com/docs/build-skills) · [Claude Code](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) · [Gemini CLI](https://geminicli.com/docs/cli/skills/) · [Cursor](https://cursor.com/docs/skills) · [Copilot](https://docs.github.com/en/copilot/concepts/customizations/agent-skills) · [OpenCode](https://opencode.ai/docs/skills) · [Windsurf / Devin Desktop](https://docs.devinai.cn/desktop/cascade/skills)
 
