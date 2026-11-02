@@ -1,0 +1,16 @@
+{
+  "name": "interview-intel-marketplace",
+  "owner": {
+    "name": "gaochenyang666-droid"
+  },
+  "metadata": {
+    "description": "Interview Intel AI agent research skill"
+  },
+  "plugins": [
+    {
+      "name": "interview-intel",
+      "source": "./",
+      "description": "Evidence-led global employer and job interview research. Checks official sources and accessible original employee/community posts, then produces a source-cited Chinese report. Three inputs: country, company, role."
+    }
+  ]
+}

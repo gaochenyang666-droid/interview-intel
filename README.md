@@ -218,6 +218,22 @@ The report lists **platforms actually attempted**, links to publicly accessible 
 
 **Numeric scoring is disabled by default** so attention stays on traceable research. Users can explicitly request the advanced [optional scoring rubric](references/scoring-rubric.md).
 
+## Skill marketplaces and direct installation
+
+Interview Intel includes plugin/extension manifests for **Claude Code**, **Gemini CLI** and **Cursor**, alongside its original cross-agent `SKILL.md`. These install from the public GitHub repository; inclusion in a vendor's **curated directory** requires separate indexing or review.
+
+```bash
+# skills.sh and compatible Agent Skills clients
+npx skills add gaochenyang666-droid/interview-intel --skill interview-intel
+
+# Gemini CLI extension
+gemini extensions install https://github.com/gaochenyang666-droid/interview-intel
+```
+
+In Claude Code run `/plugin marketplace add gaochenyang666-droid/interview-intel`, then `/plugin install interview-intel@interview-intel-marketplace`. The public Cursor Marketplace uses a separate review process.
+
+See [publishing status, submission links and ready-made listing metadata](PUBLISHING.md). Public directory approval is **not** implied by a working GitHub install.
+
 ## Coverage and reliability
 
 - **Global discovery:** country profiles and a modifiable [source catalog](references/source-catalog.json) route searches toward official sites, job boards, professional profiles, public communities and employer-review sites.

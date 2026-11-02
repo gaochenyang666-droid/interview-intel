@@ -218,6 +218,22 @@ python3 scripts/interview_intel.py catalog --country JP
 
 **默认取消数字评分，重点呈现可追溯的信息与实际评价。** 只有明确要求“评分”时才启用 [可选评分规则](references/scoring-rubric.md)，三字段输入方式保持不变。
 
+## Skill 商店与扩展安装
+
+仓库现在提供 **Claude Code、Gemini CLI、Cursor** 兼容的插件/扩展清单，也保留原有 `SKILL.md` 跨平台安装方式。以下命令可从 GitHub 安装；**官方商店公开展示仍可能需要索引或人工审核**。
+
+```bash
+# skills.sh 生态及兼容 Agent
+npx skills add gaochenyang666-droid/interview-intel --skill interview-intel
+
+# Gemini CLI 扩展
+gemini extensions install https://github.com/gaochenyang666-droid/interview-intel
+```
+
+Claude Code 中先执行 `/plugin marketplace add gaochenyang666-droid/interview-intel`，再执行 `/plugin install interview-intel@interview-intel-marketplace`。Cursor 官方商店需要单独提交审核。
+
+各商店入口、上架材料与当前状态见 [PUBLISHING.md](PUBLISHING.md)。仓库可安装不代表已经获得官方精选商店认证。
+
 ## 全球覆盖与可信度
 
 - **全球研究：** 根据国家、岗位和语言动态选择企业官网、招聘平台、职业社交媒体与本地职场社区。数据源可在 [source-catalog.json](references/source-catalog.json) 中扩展。

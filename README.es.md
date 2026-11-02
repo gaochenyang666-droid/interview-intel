@@ -213,6 +213,17 @@ El informe detalla **qué plataformas se intentaron consultar**, incluye enlaces
 
 **La puntuación numérica está desactivada de forma predeterminada.** Se puede activar expresamente mediante la [rúbrica opcional](references/scoring-rubric.md).
 
+## Directorios de Skills y extensiones
+
+El repositorio incluye manifiestos para **Claude Code, Gemini CLI y Cursor**, además del formato universal `SKILL.md`. La instalación desde GitHub no implica aprobación en una tienda oficial.
+
+```bash
+npx skills add gaochenyang666-droid/interview-intel --skill interview-intel
+gemini extensions install https://github.com/gaochenyang666-droid/interview-intel
+```
+
+En Claude Code ejecuta `/plugin marketplace add gaochenyang666-droid/interview-intel` y después `/plugin install interview-intel@interview-intel-marketplace`. Consulta los enlaces y estados de publicación en [PUBLISHING.md](PUBLISHING.md).
+
 ## Alcance, fiabilidad y privacidad
 
 - El [catálogo de fuentes](references/source-catalog.json) y los [perfiles de país](references/country-profiles.json) orientan la investigación internacional. La cobertura real depende de los resultados accesibles.

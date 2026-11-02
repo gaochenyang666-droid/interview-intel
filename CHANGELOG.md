@@ -6,6 +6,13 @@ The format follows Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
+### Distribution
+
+- Added Gemini CLI extension metadata and shared portable plugin skill wrapper.
+- Added Claude Code self-hosted marketplace and Agent Plugins manifest for Cursor.
+- Added publishing instructions and offline packaging regression tests; public directory submission/review remains separate.
+
+
 ### Simplified
 
 - Default user input now has three fields: country, company and role; `0` skips unknown information.

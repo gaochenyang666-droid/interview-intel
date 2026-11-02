@@ -213,6 +213,17 @@ python3 scripts/interview_intel.py catalog --country JP
 
 **Числовая оценка по умолчанию выключена** и доступна только по явному запросу согласно [дополнительной методике](references/scoring-rubric.md).
 
+## Каталоги Skills и расширения
+
+В репозитории есть манифесты для **Claude Code, Gemini CLI и Cursor**, а также общий `SKILL.md`. Установка с GitHub ещё не означает одобрения официальным каталогом.
+
+```bash
+npx skills add gaochenyang666-droid/interview-intel --skill interview-intel
+gemini extensions install https://github.com/gaochenyang666-droid/interview-intel
+```
+
+В Claude Code выполните `/plugin marketplace add gaochenyang666-droid/interview-intel`, затем `/plugin install interview-intel@interview-intel-marketplace`. Инструкции и статусы публикации: [PUBLISHING.md](PUBLISHING.md).
+
 ## Источники, достоверность и конфиденциальность
 
 - [Каталог источников](references/source-catalog.json) и [профили стран](references/country-profiles.json) позволяют искать данные в разных регионах. Фактическое покрытие зависит от доступности публичных страниц.
