@@ -8,7 +8,19 @@
 
 Interview Intel is an installable Agent Skill for researching an employer and role, finding public employee discussions, collecting historical interview experiences, generating source-labelled questions, and running a stateful mock interview. It produces a Simplified Chinese report with original links, dates, confidence levels, and explicit information gaps.
 
-> Development version: `0.2.0-beta.1`. Live research uses the host agent's public web search and browser tools. The Python utilities plan searches, validate evidence, generate questions, persist interview state, and render reports. They do not crawl the web by themselves.
+> Latest prerelease: **[v0.2.0-beta.1](https://github.com/gaochenyang666-droid/interview-intel/releases/tag/v0.2.0-beta.1)** (2026-11-02). Live research uses the host agent's public web search and browser tools. The Python utilities plan searches, validate evidence, generate questions, persist interview state, and render reports. They do not crawl the web by themselves.
+
+## What's new in v0.2.0-beta.1
+
+This beta expands Interview Intel from employer research into **evidence-labelled interview preparation and interactive mock interviews**:
+
+- **Public interview experience research:** finds source-linked, publicly accessible interview accounts in English and the target country's main language. Search excerpts are not accepted as verified firsthand evidence.
+- **Four evidence tiers:** distinguishes questions reported for the same company and role, related roles at the same company, comparable companies, and role-based AI predictions. Predictions never masquerade as historical company questions.
+- **Ten role-aware practice questions:** creates a diverse set of questions with competencies, source labels, answer outlines, difficulty, and recommended answer structure.
+- **Stateful interview simulator:** practices HR, technical, professional, business-case, or final-round scenarios, one question at a time, with contextual follow-ups, adaptive difficulty, skip, reset, and session feedback.
+- **Quality and privacy safeguards:** validates historical question text against linked public accounts, retains explicit research gaps, avoids interviewer profiling, and keeps numerical company scoring opt-in.
+
+See the [v0.2.0-beta.1 release notes](https://github.com/gaochenyang666-droid/interview-intel/releases/tag/v0.2.0-beta.1) and [CHANGELOG](CHANGELOG.md) for detailed changes. This remains a **beta**: live-source availability depends on the host agent, and the local simulator uses deterministic heuristics for some feedback.
 
 ## Quick start
 
@@ -100,6 +112,9 @@ Requirements: Git, Python 3.10 or newer, and an agent with public web access and
 
 ```bash
 git clone https://github.com/gaochenyang666-droid/interview-intel.git
+cd interview-intel
+git checkout v0.2.0-beta.1
+cd ..
 mkdir -p ~/.agents/skills
 cp -R interview-intel ~/.agents/skills/interview-intel
 ```
