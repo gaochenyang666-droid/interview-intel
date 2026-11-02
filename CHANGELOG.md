@@ -4,51 +4,55 @@ All notable changes to Interview Intel are documented here.
 
 The format follows Keep a Changelog and the project uses semantic versioning.
 
-## [Unreleased]
-
-### Fixed
-
-- Added a tested Qwen AI ZIP packager that guarantees root-level `SKILL.md`, filters cache files, and checks archive integrity and size; also supports the distinct QwenWork folder-wrapped layout.
-
-
-### Distribution
-
-- Added Gemini CLI extension metadata and shared portable plugin skill wrapper.
-- Added Claude Code self-hosted marketplace and Agent Plugins manifest for Cursor.
-- Added publishing instructions and offline packaging regression tests; public directory submission/review remains separate.
-
-
-### Simplified
-
-- Default user input now has three fields: country, company and role; `0` skips unknown information.
-- Removed interviewer profiling from search planning and rendered reports, with legacy JSON validation retained.
-- Report sections are now company, public employee/social reviews, role, interview preparation, and sources.
-
-
-### Improved
-
-- Require at least two site-targeted external community platform attempts per new company research and record each result or access failure.
-- Prioritize accessible original employee and social-media posts with attribution, dates and sample limitations.
-- Disable numeric opportunity scores in reports by default; keep scoring available only on explicit request.
-
-
-
-### Changed
-
-- Added optional four-field quick input: country / company / role / interviewer, with `0` meaning skip.
-- Added a `quick` CLI command and target-aware search planning. Missing interviewer, role or company sections are omitted in quick-mode reports, while full legacy reports retain their structure.
-- Personal-fit scores remain unscored unless candidate background is supplied.
-
+## [0.2.0-beta.1] - 2026-11-02
 
 ### Added
 
-- Optional evidence-driven opportunity scoring: seven fixed metrics, weighted company/role/candidate-fit dimensions, source-quality labels and coverage-aware suppression.
-- `score` CLI command, transparent rubric documentation and scoring regression tests.
-- Optional candidate work preferences in normalized input for contextual fit scoring.
+- Added public historical interview research with four source tiers: same company and role, same company and related role, comparable company and role, and role-based prediction.
+- Added a ten-question generator with source labels, migration rationale, category diversity, competencies, answer outlines, and recommended answer structure.
+- Added evidence validation that requires historical question text to match a linked public interview experience.
+- Added a stateful interactive mock interview with scene selection, one-question-at-a-time output, contextual follow-up, adaptive difficulty, local state, and final feedback.
+- Added conversational controls for starting, finishing, and restarting a mock session.
+- Added role-specific question mixes for engineering, data, product, operations, and management roles.
+- Added regression tests for evidence tiers, mislabelled questions, duplicate prompts, follow-ups, difficulty changes, and complete sessions.
 
-### Notes
+### Changed
 
-- Missing or low-quality evidence never becomes a neutral or zero rating. This heuristic index is not a hiring probability or universal company ranking.
+- Expanded the Chinese report to six sections, adding public historical interview experiences and matching before interview preparation.
+- Updated the canonical Skill, portable entrypoint, evidence schema, report specification, input schema, and four language READMEs.
+- Kept three-field input with `0` as unknown, interviewer profiling disabled, and company numeric scoring off by default.
+- Preserved legacy research JSON and `mock_questions` compatibility by normalizing legacy questions to predictions.
+- Made engineering, data, product, operations, and management roles produce materially different question categories.
+- Prioritized the selected mock interview scene while retaining historical evidence preference inside relevant categories.
+
+### Fixed
+
+- Accepted month-precision interview dates from public interview posts.
+- Removed weak-action false positives from mock answer analysis.
+- Added evidence ID remapping for interview experiences and comparable companies during URL deduplication.
+- Prevented fabricated historical questions by requiring exact text in the linked public account.
+- Fixed the Qwen AI ZIP packager so its archive contains a root-level `SKILL.md`, filters cache files, verifies archive integrity and size, and supports the QwenWork folder-wrapped layout.
+
+### Distribution
+
+- Added Gemini CLI extension metadata and a shared portable plugin skill wrapper.
+- Added Claude Code self-hosted marketplace and Agent Plugins manifest support for Cursor.
+- Added publishing instructions and offline packaging regression tests. Public directory approval remains separate.
+
+### Security
+
+- Rejected prompt-injection instructions from source text.
+- Required independent source origins before high-confidence corroboration.
+- Redacted unrelated private email addresses, phone numbers, and residential addresses.
+- Kept raw QA research, source excerpts, local mock interview state, and candidate data out of the public repository.
+
+### Known limitations
+
+- Search depends on the host agent and accessible public sources.
+- Login-gated and CAPTCHA-protected pages remain out of scope.
+- Anonymous reviews and self-reported salaries cannot support high-confidence facts.
+- Local simulator follow-up analysis uses deterministic heuristics.
+- Native-language alias coverage remains limited.
 
 ## [0.1.0-beta.1] - 2026-11-02
 
@@ -58,32 +62,26 @@ The format follows Keep a Changelog and the project uses semantic versioning.
 - English-first multilingual search planning for 19 country profiles.
 - Extensible catalog of global, regional, and local research sources.
 - Evidence schema, source deduplication, lineage tracking, and confidence ceilings.
-- Six-section Simplified Chinese report rendering.
-- Company, role, salary, interview, and public interviewer research workflows.
-- Ten role-specific mock questions with explicit prediction labels.
-- Input validation for ambiguous company entities and unresolved interviewer identities.
+- Simplified Chinese report rendering.
+- Company, role, salary, and public employee research workflows.
+- Three-field input with `0` as unknown.
+- Input validation for ambiguous company entities.
 - Offline and partial-network degradation behavior.
-- Regression tests for the target countries, conflicting evidence, sparse data, and source deduplication.
 - Security hardening for prompt injection and unrelated private information.
 - GitHub Actions test matrix and community documentation.
 
 ### Changed
 
-- Retired the historical `kanzhun.com` route after the domain was no longer serving the expected employer-review product.
+- Removed individual interviewer profiling from active planning and reports.
+- Retired the historical `kanzhun.com` route after the domain no longer served the expected employer-review product.
 - Local-language query selection now survives a four-query research budget.
-
-### Security
-
-- Reject evidence containing prompt-injection instructions.
-- Require independent source origins before confirming a public person's identity.
-- Redact unrelated private email addresses, phone numbers, and residential addresses.
-- Exclude raw QA research and source-page excerpts from the public repository.
+- Numeric opportunity scoring became opt-in.
 
 ### Known limitations
 
 - Search is performed by the host Agent rather than a bundled search engine.
 - Login-gated and CAPTCHA-protected sources are intentionally out of scope.
 - Anonymous employee reviews and self-reported salaries cannot support high-confidence company facts.
-- Native-language entity aliases remain limited.
 
+[0.2.0-beta.1]: https://github.com/gaochenyang666-droid/interview-intel/compare/v0.1.0-beta.1...main
 [0.1.0-beta.1]: https://github.com/gaochenyang666-droid/interview-intel/releases/tag/v0.1.0-beta.1

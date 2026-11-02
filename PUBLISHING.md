@@ -42,7 +42,7 @@ This is a **public listing channel** (not just a personal Skill upload). Officia
    
    **Different product warning:** QwenWork's organization skill uploader requires one **top-level `interview-intel/` folder** rather than a root-level SKILL.md. Create that different archive with `python3 scripts/package_skill.py --format qwenwork --output ~/Downloads/interview-intel-qwenwork.zip`. Do not confuse the two products. Official requirements: [Qwen AI Platform](https://platform.qianwenai.com/docs/agent-infra/skills/introduction) and [QwenWork](https://docs.qwenwork.ai/enterprise/skills).
 2. Log in to [Qwen Skills marketplace](https://www.qianwenai.com/hub/skills), select **Skill 发布**, set your author handle if this is the first publication and complete the required real-name verification.
-3. Upload the ZIP, confirm these fields: slug `interview-intel`, title `Interview Intel`, current beta version `0.1.0-beta.1` (or the next version accepted by the marketplace), license **MIT**, and the summary below.
+3. Upload the ZIP, confirm these fields: slug `interview-intel`, title `Interview Intel`, current development version `0.2.0-beta.1` after its release is approved, license **MIT**, and the summary below.
 4. Submit for security checks and human review. Track the status in [My Skills](https://www.qianwenai.com/hub/skills/manage). Submission is not publication.
 
 **Kimi** currently documents using a public GitHub Skill URL to install and share. This provides distribution through Kimi users but does not guarantee inclusion in Kimi's featured Skill Store.
@@ -53,11 +53,11 @@ This is a **public listing channel** (not just a personal Skill upload). Officia
 
 **Subtitle:** Global interview research with authentic public workplace discussions
 
-**Description:** An open-source Agent Skill for researching employers and job roles across countries. It checks official job postings, public employee reviews, local-language workplace communities, salary evidence and public interview experiences. Produces a source-cited Chinese interview intelligence report with explicit limitations. Requires only country, company and role. No interviewer identity profiling; numeric scoring off by default.
+**Description:** An open-source Agent Skill for researching employers and job roles across countries. It checks official sources, public employee reviews, local-language workplace communities, salary evidence and historical interview experiences. It labels company originals, related-role questions, comparable-company questions and AI predictions, then supports an evidence-grounded mock interview. Requires only country, company and role. No interviewer identity profiling; numeric scoring off by default.
 
 **Categories:** Research, Productivity, Job Search, Career, Agent Skills
 
-**Keywords:** interview preparation, employer research, job research, employee reviews, workplace culture, salary insights, global hiring, osint, agent skill
+**Keywords:** interview preparation, employer research, job research, employee reviews, workplace culture, salary insights, interview questions, mock interview, global hiring, osint, agent skill
 
 **Source:** https://github.com/gaochenyang666-droid/interview-intel
 

@@ -1,4 +1,4 @@
 interface:
   display_name: "Interview Intel"
-  short_description: "Global, source-graded Chinese interview intelligence"
-  default_prompt: "Use three simple inputs: country, company, and role. Treat 0 as unknown and skip it. Verify official information and search at least two independent workplace communities for original employee posts when a company is named. Deliver a Chinese report with cited sources and no numeric scoring unless explicitly requested. Do not ask for interviewer names."
+  short_description: "Global source-graded interview research and mock practice"
+  default_prompt: "Use three inputs: country, company, and role. Treat 0 as unknown and skip it. Search in English first, then the main local language. Verify official information and public workplace communities. Prefer same-company and same-role interview accounts, then label lower-tier and predicted questions explicitly. Deliver a six-section Chinese report with cited sources, no interviewer profiling, and no numeric company score by default. Support a one-question-at-a-time mock interview."

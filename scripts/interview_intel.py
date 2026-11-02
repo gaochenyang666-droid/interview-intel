@@ -20,6 +20,7 @@ from intel_core import (
     route_sources,
     validate_research,
 )
+from interview_questions import generate_question_bank
 
 
 def _read_json(path: str) -> dict:
@@ -165,6 +166,17 @@ def cmd_score(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_generate_questions(args: argparse.Namespace) -> int:
+    """Populate interview_prep.questions from researched experiences and role evidence."""
+    data = _read_json(args.research)
+    questions = generate_question_bank(data, limit=10)
+    data.setdefault("interview_prep", {})["questions"] = questions
+    data["interview_prep"].pop("mock_questions", None)
+    validate_research(data)
+    _write_or_print(json.dumps(data, ensure_ascii=False, indent=2) + "\n", args.output)
+    return 0
+
+
 def cmd_catalog(args: argparse.Namespace) -> int:
     if args.raw:
         catalog = load_source_catalog()
@@ -222,6 +234,14 @@ def build_parser() -> argparse.ArgumentParser:
     score.add_argument("research", help="Completed research JSON with optional assessment.metrics")
     score.add_argument("--output", "-o")
     score.set_defaults(func=cmd_score)
+
+    questions = subparsers.add_parser(
+        "generate-questions",
+        help="Generate ten source-labelled questions from research evidence",
+    )
+    questions.add_argument("research", help="Research JSON with evidence and optional interview_experiences")
+    questions.add_argument("--output", "-o", help="Write the updated research JSON")
+    questions.set_defaults(func=cmd_generate_questions)
 
     catalog = subparsers.add_parser("catalog", help="Inspect or route the candidate source catalog")
     catalog.add_argument("--country")

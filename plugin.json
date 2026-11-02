@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "interview-intel",
-  "version": "0.1.0-beta.1",
-  "description": "Evidence-led global employer and job interview research. Checks official sources and accessible original employee/community posts, then produces a source-cited Chinese report. Three inputs: country, company, role.",
+  "version": "0.2.0-beta.1",
+  "description": "Evidence-led global employer and job interview research with source-labelled historical interview questions and interactive mock practice. Uses three inputs: country, company, role.",
   "author": {
     "name": "gaochenyang666-droid"
   }

@@ -83,12 +83,13 @@ class QuickInputTests(unittest.TestCase):
         self.assertEqual(plan["request"]["interviewers"], [])
         self.assertFalse(any("interviewer" in q["category"] for q in plan["queries"]))
 
-    def test_report_has_five_numbered_sections(self):
+    def test_report_has_six_numbered_sections(self):
         report = render_report(complete_research())
         for title in ["## 1. 公司概况与综合评价", "## 2. 员工及社交媒体评价",
-                      "## 3. 岗位评价", "## 4. 面试预测与准备", "## 5. 来源与可信度"]:
+                      "## 3. 岗位评价", "## 4. 公开历史面经与匹配",
+                      "## 5. 面试预测与准备", "## 6. 来源与可信度"]:
             self.assertIn(title, report)
-        self.assertNotIn("## 4. HR / 面试官公开情报", report)
+        self.assertNotIn("HR / 面试官公开情报", report)
         self.assertNotIn("### Alex Example", report)
 
     def test_quick_report_skips_absent_role(self):
@@ -101,7 +102,7 @@ class QuickInputTests(unittest.TestCase):
         self.assertIn("1. 公司概况与综合评价", report)
         self.assertNotIn("## 3. 岗位评价", report)
         self.assertNotIn("## 4. 面试预测与准备", report)
-        self.assertIn("## 5. 来源与可信度", report)
+        self.assertIn("## 6. 来源与可信度", report)
 
     def test_quick_report_skips_absent_company(self):
         data = complete_research()

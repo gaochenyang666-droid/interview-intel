@@ -6,7 +6,7 @@
 2. Company state: latest official results or filing, recent credible news, workforce changes, and product changes.
 3. Role: exact public posting first; then similar active and archived postings from the same employer.
 4. **Mandatory employee/community experience:** after confirming company identity, attempt at least two distinct external platforms, preferably three. Open original publicly accessible posts and record search terms and outcomes. Separate claims by current or former employees where visible; employment claims remain unverified unless corroborated.
-5. Interview experience: original posts with date, location, level, department, and interview stage. Prefer detailed contemporaneous accounts.
+5. Interview experience: original posts with date, location, level, department, interview stage, format, and explicit questions. Prefer same-company and same-role accounts, then same-company related roles, comparable-company roles, and role-based predictions. Read [interview-practice.md](interview-practice.md) before building the question bank.
 6. Compensation: level, location, currency, period, sample size, and date. Preserve missing sample size.
 7. Role-level interview preparation: use accessible public accounts of interviews for the same role, location and level. Never identify or profile individual interviewers.
 

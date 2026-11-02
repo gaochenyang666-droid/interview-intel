@@ -26,7 +26,8 @@ class DistributionTests(unittest.TestCase):
         self.assertTrue(content.startswith("---\nname: interview-intel\n"))
         self.assertIn("../../SKILL.md", content)
         for relative in ["../../SKILL.md","../../scripts/interview_intel.py",
-                         "../../references"]:
+                         "../../scripts/interview_simulator.py",
+                         "../../references/interview-practice.md"]:
             self.assertTrue((wrapper.parent / relative).exists(), relative)
         self.assertIn("at least two", content)
         self.assertIn("no individual interviewer profiling", content)
@@ -34,6 +35,9 @@ class DistributionTests(unittest.TestCase):
         text = (ROOT / "PUBLISHING.md").read_text(encoding="utf-8")
         self.assertIn("gaochenyang666-droid/interview-intel", text)
         self.assertIn("gemini-cli-extension", text)
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("interview-practice.md", readme)
+        self.assertIn("0.2.0-beta.1", readme)
 
 
 if __name__ == "__main__":

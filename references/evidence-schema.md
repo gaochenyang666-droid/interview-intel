@@ -11,9 +11,12 @@ The renderer rejects unsupported factual claims. The schema is intentionally exp
   "research": {},
   "evidence": [],
   "findings": [],
+  "interview_experiences": [],
+  "similar_companies": [],
   "market": {},
   "summary": {},
   "interview_prep": {},
+  "interaction": {},
   "assessment": {"metrics": []},
   "sources_consulted": []
 }
@@ -113,7 +116,7 @@ Each finding has:
 ```json
 {
   "id": "F001",
-  "section": "company|reviews|role|prep",
+  "section": "company|reviews|role|experiences|prep",
   "kind": "fact",
   "statement": "简体中文结论",
   "evidence_ids": ["E001"],
@@ -158,22 +161,30 @@ Use `market.salary_observations`, not a fabricated range:
 
 Do not calculate a range when the source has no usable values. Keep currency, time period, level, and location attached to every number.
 
+## Interview experiences and comparable companies
+
+`interview_experiences` stores public interview accounts that were actually opened. Each item requires an `I###` ID, a source level from 1 to 4, company, role, a non-empty question array, evidence IDs, and source rationale when a lower-level match is used. See [interview-practice.md](interview-practice.md) for the complete record and tier rules.
+
+Only levels 1 to 3 can support historical or transferable questions. Historical question text must match a question in the linked interview experience after case and punctuation normalization. `similar_companies` records the company name, comparability rationale, and verified evidence IDs used by level 3 questions.
+
 ## One-page summary and preparation
 
-`summary` contains `company_view`, `opportunity_finding_ids`, `risk_finding_ids`, `top_topics`, and `unresolved_questions`.
+`summary` contains `company_view`, `opportunity_finding_ids`, `risk_finding_ids`, `experience_note`, `top_topics`, and `unresolved_questions`.
 
 `interview_prep` contains:
 
 - `priorities`: up to five evidence-backed focus topics;
-- `mock_questions`: exactly ten items with `question`, `kind="prediction"`, `basis`, `evidence_ids`, and `answer_outline`;
+- `questions`: exactly ten source-labelled items with `question`, `category`, `source_level`, `origin_type`, `basis`, `evidence_ids`, `competencies`, `answer_outline`, and `answer_structure`;
 - `star_framework`: one concise adaptation;
 - `candidate_fit`: `strengths`, `gaps`, `evidence`, and `not_disclosed`;
 - `questions_to_ask`;
 - `negotiation_notes`;
 - `final_checklist`.
 
-The renderer labels all mock questions as predictions.
+`interaction` contains optional session defaults: `recommended_scene`, `default_difficulty`, and `questions_per_session`.
+
+Legacy `interview_prep.mock_questions` items remain readable and normalize to source level 4 predictions. New artifacts use `interview_prep.questions`. Every question is rendered with its actual source level and origin type.
 
 ## Optional evidence-driven opportunity score
 
-The optional `assessment.metrics` array contains 0–7 fixed ratings. Each item is `{ "key": "stability", "rating": 4, "reason": "可核查的评分说明", "finding_ids": ["F001"] }`. Every rating must use verified evidence-backed findings, and uses the published fixed weights. Empty metrics means no score. The CLI calculates the index using `score`; **do not provide manual overall or confidence values**. Missing factors are excluded and reported as unscored. Full anchors, source-independence requirements and calculation details: [scoring-rubric.md](scoring-rubric.md).
+The optional `assessment.metrics` array contains fixed ratings from 0 to 7. Each item is `{ "key": "stability", "rating": 4, "reason": "可核查的评分说明", "finding_ids": ["F001"] }`. Every rating must use verified evidence-backed findings, and uses the published fixed weights. Empty metrics means no score. The CLI calculates the index using `score`; **do not provide manual overall or confidence values**. Missing factors are excluded and reported as unscored. Full anchors, source-independence requirements and calculation details: [scoring-rubric.md](scoring-rubric.md).

@@ -18,7 +18,7 @@ from scoring import validate_assessment, render_score_lines
 ROOT = Path(__file__).resolve().parent.parent
 REFERENCES = ROOT / "references"
 SCHEMA_VERSION = "0.1"
-PRODUCT_VERSION = "0.1.0-beta.1"
+PRODUCT_VERSION = "0.2.0-beta.1"
 
 SOURCE_TYPES = {
     "official",
@@ -45,14 +45,43 @@ FINDING_KINDS = {
     "advice",
 }
 CONFIDENCE = {"high", "medium", "low"}
-INTERVIEWER_STATUSES = {"confirmed", "probable", "unconfirmed", "not_found"}
 NETWORK_STATUSES = {"available", "partial", "unavailable", "failed", "unknown"}
 SECTION_ORDER = [
     ("company", "1. 公司概况与综合评价"),
     ("reviews", "2. 员工及社交媒体评价"),
     ("role", "3. 岗位评价"),
-    ("prep", "4. 面试预测与准备"),
+    ("experiences", "4. 公开历史面经与匹配"),
+    ("prep", "5. 面试预测与准备"),
 ]
+INTERVIEW_SOURCE_LEVELS = {1, 2, 3, 4}
+INTERVIEW_ORIGIN_TYPES = {
+    "historical_exact",
+    "historical_similar_role",
+    "similar_company",
+    "prediction",
+}
+QUESTION_CATEGORIES = {
+    "hr_motivation",
+    "professional_knowledge",
+    "project_experience",
+    "business_scenario",
+    "case_analysis",
+    "behavioral",
+    "situational_judgment",
+    "communication_collaboration",
+    "technical",
+    "system_design",
+    "coding",
+    "product_sense",
+    "data_analysis",
+    "portfolio_review",
+    "design_exercise",
+    "visual_craft",
+    "user_research",
+}
+SCENES = {"hr_screen", "professional", "technical", "business_case", "final"}
+DIFFICULTIES = {"junior", "intermediate", "senior", "stress"}
+SALARY_PERIODS = {"year", "month", "hour"}
 KIND_LABELS = {
     "fact": "事实",
     "person_statement": "本人公开表述",
@@ -68,6 +97,37 @@ ACCESS_LABELS = {
     "snippet_only": "仅搜索摘要",
     "blocked": "访问受限",
     "unavailable": "页面不可用",
+}
+EXPERIENCE_LEVEL_LABELS = {
+    1: "第一级：本公司相同岗位",
+    2: "第二级：本公司相近岗位",
+    3: "第三级：相似公司相同岗位",
+    4: "第四级：行业通用 / AI 预测",
+}
+QUESTION_ORIGIN_LABELS = {
+    "historical_exact": "历史原题",
+    "historical_similar_role": "本公司相近岗位参考题",
+    "similar_company": "相似公司参考题",
+    "prediction": "AI 预测题",
+}
+QUESTION_CATEGORY_LABELS = {
+    "hr_motivation": "HR 动因与动机",
+    "professional_knowledge": "专业知识",
+    "project_experience": "项目经历",
+    "business_scenario": "业务场景",
+    "case_analysis": "案例分析",
+    "behavioral": "行为面试",
+    "situational_judgment": "情境判断",
+    "communication_collaboration": "沟通协作",
+    "technical": "技术能力",
+    "system_design": "系统设计",
+    "coding": "编码",
+    "product_sense": "产品思维",
+    "data_analysis": "数据分析",
+    "portfolio_review": "作品集深挖",
+    "design_exercise": "设计演练",
+    "visual_craft": "视觉与交互质量",
+    "user_research": "用户研究",
 }
 TRACKING_PARAMS = {
     "fbclid",
@@ -206,6 +266,7 @@ def normalize_request(request: dict[str, Any]) -> tuple[dict[str, Any], list[str
             "url": _clean_optional(role.get("url")),
             "description": _clean_optional(role.get("description"), collapse=False),
             "level": _clean_optional(role.get("level")),
+            "family": _clean_optional(role.get("family")),
         },
         "location": {
             "country": country,
@@ -213,6 +274,9 @@ def normalize_request(request: dict[str, Any]) -> tuple[dict[str, Any], list[str
             "city": _clean_optional(location.get("city")),
         },
         "interviewers": cleaned_interviewers,
+        "similar_companies": _clean_string_list(
+            company.get("similar_companies", request.get("similar_companies"))
+        ),
         "candidate": {
             "summary": _clean_optional(candidate.get("summary"), collapse=False),
             "skills": _clean_string_list(candidate.get("skills")),
@@ -313,12 +377,12 @@ def _community_queries(company: str, role: str | None,
         "ES": "es", "FR": "fr", "IN": "en",
     }.get(country_code, "en")
     words = {
-        "CN": "员工 工作体验 加班 离职",
-        "JP": "社員 口コミ 労働環境 退職",
-        "KR": "직원 후기 근무환경 퇴사",
-        "DE": "Mitarbeiter Erfahrungen Arbeitsklima",
-        "ES": "opiniones empleados ambiente laboral",
-        "FR": "avis salariés conditions de travail",
+        "CN": "员工 评价 正面 负面 加班 离职 工作体验",
+        "JP": "社員 口コミ 良い点 悪い点 労働環境 退職",
+        "KR": "직원 후기 장점 단점 근무환경 퇴사",
+        "DE": "Mitarbeiter Erfahrungen Vorteile Nachteile Arbeitsklima",
+        "ES": "opiniones empleados ventajas desventajas ambiente laboral",
+        "FR": "avis salariés avantages inconvénients conditions de travail",
     }.get(country_code, "employee experience culture workload")
     terms = f'{_quote(company)} {role or ""} {words}'
     queries: list[dict[str, Any]] = []
@@ -394,6 +458,7 @@ def build_queries(request: dict[str, Any], country_code: str | None) -> list[dic
     role = request["role"].get("title")
     city = request["location"].get("city")
     industry = request["company"].get("industry")
+    similar_companies = request.get("similar_companies", [])
     catalog = load_source_catalog()
     active_ids = {item["id"] for item in catalog["sources"] if item.get("status") != "retired"}
     platforms = [p for p in profile.get("platforms", []) if p in active_ids]
@@ -413,8 +478,25 @@ def build_queries(request: dict[str, Any], country_code: str | None) -> list[dic
         contextual = " ".join(x for x in [f'"{company}"' if company else None, f'"{role}"', city] if x)
         queries.append(_query("en", "company_jobs" if company else "role_jobs",
                               f'{contextual} careers job opening responsibilities', 98, platforms, "查询公开岗位职责与要求"))
-        queries.append(_query("en", "role_interview", f'{contextual} interview experience questions', 96,
-                              ["glassdoor", "reddit", "youtube", "blind"], "收集岗位面试流程和问题"))
+        interviews = ["glassdoor", "reddit", "youtube", "blind", "nowcoder", "leetcode"]
+        if company:
+            queries.append(_query("en", "interview_exact", f'{contextual} interview experience questions rounds', 97,
+                                  interviews, "优先寻找本公司与相同岗位的公开面经和原题"))
+            queries.append(_query("en", "interview_similar_role",
+                                  f'{_quote(company)} related role interview experience questions',
+                                  83, interviews, "完全匹配不足时寻找本公司相近岗位面经"))
+        if similar_companies:
+            peer_expression = " OR ".join(_quote(name) for name in similar_companies[:5])
+            queries.append(_query("en", "interview_peer_company",
+                                  f'({peer_expression}) {_quote(role)} interview experience questions',
+                                  79, interviews, "参考已确认的同行业、相近业务公司同岗位面经"))
+        else:
+            queries.append(_query("en", "interview_peer_discovery",
+                                  f'{_quote(industry or "")} companies {_quote(role)} interview experience questions',
+                                  74, interviews, "先发现业务模式和岗位相近的可比公司，再检索同岗位面经"))
+        queries.append(_query("en", "interview_role_general",
+                              f'{_quote(role)} interview questions competencies common scenarios',
+                              70, ["youtube", "reddit", "leetcode"], "没有公司专属面经时补充行业通用岗位问题"))
         queries.append(_query("en", "role_market", f'{contextual} salary level compensation benchmark', 90,
                               ["levels-fyi", "glassdoor", "indeed"], "了解薪酬区间及适用地点"))
         if company:
@@ -432,8 +514,19 @@ def build_queries(request: dict[str, Any], country_code: str | None) -> list[dic
             queries.append(_query(language, category, f'{_quote(target)} {terms}', 92, platforms,
                                   "使用当地语言查找岗位、企业及社区信息"))
             if role:
-                queries.append(_query(language, "local_interview", f'{_quote(target)} {terms} interview', 89, platforms,
-                                      "使用当地语言查找面试经验"))
+                local_interview_terms = {
+                    "zh-Hans": "面经 面试题 面试流程 面试经验",
+                    "ja": "面接体験 面接質問 選考フロー",
+                    "ko": "면접 후기 면접 질문 채용 절차",
+                    "de": "Vorstellungsgespräch Erfahrung Fragen",
+                    "fr": "expérience entretien questions processus",
+                    "es": "experiencia entrevista preguntas proceso",
+                    "pt-BR": "experiência entrevista perguntas processo",
+                    "hi": "साक्षात्कार अनुभव प्रश्न प्रक्रिया",
+                }.get(language, terms)
+                queries.append(_query(language, "interview_local",
+                                      f'{_quote(target)} {local_interview_terms}', 96, interviews,
+                                      "使用当地语言优先检索本公司和同岗位公开面经"))
     seen: set[tuple[str, str]] = set()
     de_duplicated: list[dict[str, Any]] = []
     for item in sorted(queries, key=lambda q: (-q["priority"], q["language"])):
@@ -498,6 +591,91 @@ def route_sources(country_code: str | None, language_order: list[str], limit: in
     return ranked[:limit]
 
 
+def _recommended_question_mix(role_title: str | None, industry: str | None = None) -> list[str]:
+    role_text = (role_title or "").casefold()
+    combined = f"{role_title or ''} {industry or ''}".casefold()
+    if any(term in role_text for term in ["designer", "design", "ux", "ui", "设计", "交互"]):
+        return [
+            "portfolio_review",
+            "design_exercise",
+            "user_research",
+            "visual_craft",
+            "communication_collaboration",
+            "behavioral",
+        ]
+    if any(term in role_text for term in ["software", "developer", "engineer", "开发", "工程师", "程序"]):
+        return [
+            "technical",
+            "coding",
+            "system_design",
+            "project_experience",
+            "behavioral",
+            "situational_judgment",
+        ]
+    if any(term in role_text for term in ["data", "analyst", "analytics", "数据", "分析"]):
+        return [
+            "data_analysis",
+            "professional_knowledge",
+            "case_analysis",
+            "project_experience",
+            "behavioral",
+            "communication_collaboration",
+        ]
+    if any(term in role_text for term in ["product", "产品"]):
+        return [
+            "product_sense",
+            "business_scenario",
+            "case_analysis",
+            "project_experience",
+            "behavioral",
+            "communication_collaboration",
+        ]
+    if any(term in role_text for term in ["operation", "运营", "growth", "增长"]):
+        return [
+            "business_scenario",
+            "data_analysis",
+            "project_experience",
+            "case_analysis",
+            "behavioral",
+            "communication_collaboration",
+        ]
+    if any(term in role_text for term in ["manager", "director", "经理", "管理"]):
+        return [
+            "behavioral",
+            "situational_judgment",
+            "business_scenario",
+            "communication_collaboration",
+            "project_experience",
+            "professional_knowledge",
+        ]
+    if any(term in combined for term in ["software", "developer", "engineer", "开发", "工程师", "程序"]):
+        return [
+            "technical",
+            "coding",
+            "system_design",
+            "project_experience",
+            "behavioral",
+            "situational_judgment",
+        ]
+    return [
+        "professional_knowledge",
+        "project_experience",
+        "behavioral",
+        "situational_judgment",
+        "communication_collaboration",
+        "case_analysis",
+    ]
+
+
+def _default_difficulty(role_level: str | None) -> str:
+    level = (role_level or "").casefold()
+    if any(term in level for term in ["intern", "entry", "junior", "assistant", "初级", "实习"]):
+        return "junior"
+    if any(term in level for term in ["senior", "lead", "staff", "principal", "manager", "director", "高级", "资深", "经理"]):
+        return "senior"
+    return "intermediate"
+
+
 def build_plan(request: dict[str, Any], max_queries: int | None = None, network_status: str = "unknown") -> dict[str, Any]:
     normalized, warnings = normalize_request(request)
     if network_status not in NETWORK_STATUSES:
@@ -531,6 +709,10 @@ def build_plan(request: dict[str, Any], max_queries: int | None = None, network_
         mandatory.extend(community[:2])
     elif normalized["company"].get("name") and requested_limit >= 4 and not mandatory:
         mandatory.extend(community[:1])
+    if normalized["company"].get("name") and normalized["role"].get("title"):
+        exact_interviews = [item for item in all_queries if item["category"] == "interview_exact"]
+        if exact_interviews:
+            mandatory.append(exact_interviews[0])
     selected_query_keys = {(item["language"], item["query"]) for item in mandatory}
     queries = list({(item["language"], item["query"]): item for item in mandatory}.values())
     for item in sorted(all_queries, key=lambda entry: (-entry["priority"], entry["language"])):
@@ -581,6 +763,8 @@ def build_plan(request: dict[str, Any], max_queries: int | None = None, network_
         "evidence": [],
         "findings": [],
         "interviewers": [],
+        "interview_experiences": [],
+        "similar_companies": [],
         "market": {
             "currency": profile.get("currency"),
             "location": ", ".join(
@@ -593,12 +777,13 @@ def build_plan(request: dict[str, Any], max_queries: int | None = None, network_
             "company_view": "",
             "opportunity_finding_ids": [],
             "risk_finding_ids": [],
+            "experience_note": "",
             "top_topics": [],
             "unresolved_questions": [],
         },
         "interview_prep": {
             "priorities": [],
-            "mock_questions": [],
+            "questions": [],
             "star_framework": "",
             "candidate_fit": {
                 "strengths": [],
@@ -609,6 +794,11 @@ def build_plan(request: dict[str, Any], max_queries: int | None = None, network_
             "questions_to_ask": [],
             "negotiation_notes": [],
             "final_checklist": [],
+        },
+        "interaction": {
+            "recommended_scene": "auto",
+            "default_difficulty": _default_difficulty(normalized["role"].get("level")),
+            "questions_per_session": 10,
         },
         "sources_consulted": [],
         "assessment": {"metrics": []},
@@ -635,8 +825,23 @@ def build_plan(request: dict[str, Any], max_queries: int | None = None, network_
         "queries": queries,
         "sources": selected_sources,
         "community_targets": _community_targets(country_code) if normalized["company"].get("name") else [],
+        "interview_strategy": {
+            "company": normalized["company"].get("name"),
+            "role": normalized["role"].get("title"),
+            "supplied_similar_companies": normalized.get("similar_companies", []),
+            "question_mix": _recommended_question_mix(
+                normalized["role"].get("title"),
+                normalized["company"].get("industry"),
+            ),
+            "selection_order": [
+                "1_same_company_same_role_recent",
+                "2_same_company_similar_role",
+                "3_similar_company_same_role",
+                "4_role_and_jd_prediction",
+            ],
+        },
         "warnings": warnings,
-        "stopping_rule": "公司身份核实后必须尝试至少两个独立职场社区或社交平台，记录实际查询词与访问失败。能打开原帖时展示正反评价、原文链接和样本局限。无法打开时明确说明，不能用官网宣传替代员工体验。",
+        "stopping_rule": "公司身份核实后必须尝试至少两个独立职场社区或社交平台，记录实际查询词与访问失败。面经优先使用本公司同岗位原帖；不足时按相近岗位、相似公司、岗位预测逐级降级，并清晰标注来源级别。",
         "scaffold": scaffold,
     }
 
@@ -771,6 +976,296 @@ def _confidence_ceiling(source_items: list[dict[str, Any]]) -> str:
     return "low"
 
 
+def _entity_name_key(value: Any) -> str:
+    return re.sub(r"[\s\W_]+", "", str(value or "").casefold(), flags=re.UNICODE)
+
+
+def _same_entity_name(left: Any, right: Any) -> bool:
+    left_key = _entity_name_key(left)
+    right_key = _entity_name_key(right)
+    if not left_key or not right_key:
+        return False
+    return left_key == right_key or left_key in right_key or right_key in left_key
+
+
+def _question_fingerprint(value: Any) -> str:
+    return re.sub(r"[\s\W_]+", "", str(value or "").casefold(), flags=re.UNICODE)
+
+
+def _valid_interview_date(value: Any) -> bool:
+    """Accept a full ISO date/time or the month precision commonly used in interview posts."""
+    if value in {None, ""}:
+        return True
+    if not isinstance(value, str):
+        return False
+    return bool(
+        re.fullmatch(r"[0-9]{4}-(?:0[1-9]|1[0-2])", value)
+        or _valid_date(value)
+    )
+
+
+def _normalize_question(
+    question: dict[str, Any],
+    index: int,
+    *,
+    legacy: bool,
+) -> dict[str, Any]:
+    normalized = copy.deepcopy(question)
+    normalized.setdefault("id", f"IQ{index:03d}")
+    normalized.setdefault("category", "professional_knowledge")
+    normalized.setdefault("source_level", 4)
+    normalized.setdefault("origin_type", "prediction")
+    normalized.setdefault("competencies", ["岗位核心能力"])
+    normalized.setdefault("answer_structure", normalized.get("answer_outline", ""))
+    normalized.setdefault("source_company", None)
+    normalized.setdefault("source_role", None)
+    normalized.setdefault("migration_rationale", None)
+    normalized["_legacy_shape"] = legacy
+    return normalized
+
+
+def _validate_interview_research(
+    data: dict[str, Any],
+    evidence: dict[str, dict[str, Any]],
+    issues: list[str],
+    warnings: list[str],
+) -> None:
+    request = data.get("request", {})
+    request_company = request.get("company", {}).get("name")
+    request_role = request.get("role", {}).get("title")
+    experiences = data.get("interview_experiences", [])
+    if not isinstance(experiences, list):
+        issues.append("interview_experiences 必须是数组")
+        experiences = []
+    seen_experience_ids: set[str] = set()
+    available_levels: set[int] = set()
+    experience_question_fingerprints: dict[int, set[str]] = {}
+    for index, experience in enumerate(experiences):
+        prefix = f"interview_experiences[{index}]"
+        if not isinstance(experience, dict):
+            issues.append(f"{prefix} 必须是对象")
+            continue
+        experience_id = experience.get("id")
+        if not isinstance(experience_id, str) or not re.fullmatch(r"I[0-9]{3,}", experience_id):
+            issues.append(f"{prefix}.id 必须使用 I001 形式")
+            continue
+        if experience_id in seen_experience_ids:
+            issues.append(f"面经 ID 重复: {experience_id}")
+            continue
+        seen_experience_ids.add(experience_id)
+        level = experience.get("source_level")
+        if level not in INTERVIEW_SOURCE_LEVELS:
+            issues.append(f"{experience_id}.source_level 必须为 1-4")
+            continue
+        ids = experience.get("evidence_ids", [])
+        if not isinstance(ids, list) or not ids:
+            issues.append(f"{experience_id} 必须关联至少一条公开面经证据")
+            ids = []
+        missing = [item_id for item_id in ids if item_id not in evidence]
+        if missing:
+            issues.append(f"{experience_id} 引用不存在证据: {', '.join(missing)}")
+        eligible = _eligible_evidence(ids, evidence)
+        if not eligible:
+            issues.append(f"{experience_id} 没有可验证的已打开面经证据")
+        if level in {1, 2, 3} and eligible and not any(
+            item.get("source_type") in {"interview_report", "forum_post", "social_post", "employee_review"}
+            for item in eligible
+        ):
+            issues.append(f"{experience_id} 需要来自公开面经、论坛、社交媒体或员工评价的原帖证据")
+        if not _valid_date(experience.get("published_at")):
+            issues.append(f"{experience_id}.published_at 必须是 ISO 日期或留空")
+        if not _valid_interview_date(experience.get("interview_date")):
+            issues.append(
+                f"{experience_id}.interview_date 必须是 ISO 日期、年月或留空"
+            )
+        source_company = experience.get("company")
+        source_role = experience.get("role")
+        source_questions = experience.get("questions", [])
+        if not isinstance(source_questions, list) or not all(
+            isinstance(item, str) and item.strip() for item in source_questions
+        ):
+            issues.append(f"{experience_id}.questions 必须是字符串数组")
+            source_questions = []
+        elif eligible and source_questions:
+            available_levels.add(level)
+            experience_question_fingerprints.setdefault(level, set()).update(
+                _question_fingerprint(item) for item in source_questions
+            )
+        if level in {1, 2} and request_company and not _same_entity_name(source_company, request_company):
+            issues.append(f"{experience_id} 属于本公司级别，company 必须与请求公司一致")
+        if not request_company and level in {1, 2}:
+            issues.append(f"{experience_id} 没有请求公司时不能使用本公司专属来源级别")
+        if level == 1 and request_role and not _same_entity_name(source_role, request_role):
+            issues.append(f"{experience_id} 属于相同岗位级别，role 必须与请求岗位一致")
+        if level == 2 and not (
+            (isinstance(experience.get("role_relation"), str) and experience["role_relation"].strip())
+            or (isinstance(experience.get("match_rationale"), str) and experience["match_rationale"].strip())
+        ):
+            issues.append(f"{experience_id} 作为相近岗位参考时必须说明角色相关性")
+        if level == 3:
+            similar_company = experience.get("similar_company") or source_company
+            rationale = experience.get("match_rationale")
+            if not similar_company or not isinstance(rationale, str) or not rationale.strip():
+                issues.append(f"{experience_id} 作为相似公司参考时必须填写 similar_company 和 match_rationale")
+            normalized_similar = {
+                _entity_name_key(item.get("name"))
+                for item in data.get("similar_companies", [])
+                if isinstance(item, dict)
+            }
+            if similar_company and _entity_name_key(similar_company) not in normalized_similar:
+                issues.append(f"{experience_id}.similar_company 必须出现在 similar_companies 中")
+        if level == 4 and source_company and request_company and not _same_entity_name(source_company, request_company):
+            issues.append(f"{experience_id} 属于行业通用级别，不得把其他公司问题伪装成本公司原题")
+
+    similar_companies = data.get("similar_companies", [])
+    if not isinstance(similar_companies, list):
+        issues.append("similar_companies 必须是数组")
+        similar_companies = []
+    for index, company in enumerate(similar_companies):
+        prefix = f"similar_companies[{index}]"
+        if not isinstance(company, dict):
+            issues.append(f"{prefix} 必须是对象")
+            continue
+        if not isinstance(company.get("name"), str) or not company["name"].strip():
+            issues.append(f"{prefix}.name 必填")
+        if not isinstance(company.get("match_rationale"), str) or not company["match_rationale"].strip():
+            issues.append(f"{prefix}.match_rationale 必填，需说明行业、业务或岗位相关性")
+        ids = company.get("evidence_ids", [])
+        if not isinstance(ids, list) or not ids:
+            issues.append(f"{prefix}.evidence_ids 必填")
+        elif not _eligible_evidence(ids, evidence):
+            issues.append(f"{prefix} 没有可验证的相似公司依据")
+
+    prep = data.get("interview_prep", {})
+    if not isinstance(prep, dict):
+        issues.append("interview_prep 必须是对象")
+        return
+    raw_questions = prep.get("questions")
+    legacy = False
+    if raw_questions is None:
+        raw_questions = prep.get("mock_questions", [])
+        legacy = True
+    if not isinstance(raw_questions, list):
+        issues.append("interview_prep.questions 必须是数组")
+        return
+    questions = [
+        _normalize_question(item, index, legacy=legacy)
+        for index, item in enumerate(raw_questions, start=1)
+        if isinstance(item, dict)
+    ]
+    if legacy:
+        category_mix = _recommended_question_mix(
+            request_role,
+            request.get("company", {}).get("industry"),
+        )
+        for index, question in enumerate(questions):
+            question["category"] = category_mix[index % len(category_mix)]
+    prep["questions"] = questions
+    if len(questions) != len(raw_questions):
+        issues.append("所有模拟问题必须是对象")
+        return
+    if data.get("research", {}).get("network_status") in {"available", "partial"} and request_role:
+        if len(questions) != 10:
+            issues.append("可用网络状态下 interview_prep.questions 必须正好有 10 个问题")
+        seen_questions: set[str] = set()
+        categories: set[str] = set()
+        levels_in_bank: set[int] = set()
+        for index, question in enumerate(questions, start=1):
+            prefix = f"questions[{index - 1}]"
+            for field in ["question", "basis", "answer_outline"]:
+                if not isinstance(question.get(field), str) or not question[field].strip():
+                    issues.append(f"{prefix}.{field} 必须是非空字符串")
+            category = question.get("category")
+            if not isinstance(category, str) or not re.fullmatch(r"[a-z][a-z0-9_]*", category):
+                issues.append(f"{prefix}.category 必须使用英文蛇形分类")
+            else:
+                categories.add(category)
+            level = question.get("source_level")
+            if level not in INTERVIEW_SOURCE_LEVELS:
+                issues.append(f"{prefix}.source_level 必须为 1-4")
+            else:
+                levels_in_bank.add(level)
+            origin = question.get("origin_type")
+            if origin not in INTERVIEW_ORIGIN_TYPES:
+                issues.append(f"{prefix}.origin_type 无效")
+                continue
+            expected_origin = {
+                1: "historical_exact",
+                2: "historical_similar_role",
+                3: "similar_company",
+                4: "prediction",
+            }[level] if level in INTERVIEW_SOURCE_LEVELS else None
+            if not legacy and origin != expected_origin:
+                issues.append(f"{prefix}.source_level 与 origin_type 不一致")
+            if not legacy and level in {1, 2} and request_company and not _same_entity_name(
+                question.get("source_company"), request_company
+            ):
+                issues.append(f"{prefix} 的本公司来源与请求公司不一致")
+            if not legacy and level == 1 and request_role and not _same_entity_name(
+                question.get("source_role"), request_role
+            ):
+                issues.append(f"{prefix} 标为历史原题时 source_role 必须与请求岗位一致")
+            if not legacy and level == 3:
+                if _same_entity_name(question.get("source_company"), request_company):
+                    issues.append(f"{prefix} 属于相似公司级别，不得标成本公司来源")
+                if not question.get("migration_rationale"):
+                    issues.append(f"{prefix} 属于相似公司题目，必须说明迁移局限")
+                similar_names = {
+                    _entity_name_key(item.get("name"))
+                    for item in similar_companies
+                    if isinstance(item, dict)
+                }
+                if _entity_name_key(question.get("source_company")) not in similar_names:
+                    issues.append(f"{prefix}.source_company 必须在 similar_companies 中声明")
+            if not legacy and level == 4 and question.get("source_company") and request_company and _same_entity_name(
+                question.get("source_company"), request_company
+            ):
+                issues.append(f"{prefix} AI 预测题不得伪装成本公司历史原题")
+            competencies = question.get("competencies")
+            if not isinstance(competencies, list) or not competencies or not all(
+                isinstance(item, str) and item.strip() for item in competencies
+            ):
+                issues.append(f"{prefix}.competencies 必须是非空字符串数组")
+            if not isinstance(question.get("answer_structure"), str) or not question["answer_structure"].strip():
+                issues.append(f"{prefix}.answer_structure 必须是非空字符串")
+            ids = question.get("evidence_ids", [])
+            if not isinstance(ids, list) or not ids:
+                issues.append(f"{prefix} 缺少 evidence_ids")
+            elif not _eligible_evidence(ids, evidence):
+                issues.append(f"{prefix} 没有可验证的证据支持")
+            fingerprint = _question_fingerprint(question.get("question"))
+            if not fingerprint:
+                issues.append(f"{prefix}.question 无法标准化")
+            elif fingerprint in seen_questions:
+                issues.append(f"{prefix} 与其他模拟问题重复")
+            else:
+                seen_questions.add(fingerprint)
+            if (
+                not legacy
+                and level in {1, 2, 3}
+                and fingerprint
+                and fingerprint not in experience_question_fingerprints.get(level, set())
+            ):
+                issues.append(
+                    f"{prefix} 标为历史题，但未在对应级别的公开面经中找到原问题"
+                )
+            if legacy:
+                question["origin_type"] = "prediction"
+                question["source_level"] = 4
+        if not legacy and len(categories) < 3:
+            issues.append("十个模拟问题至少需要三种不同题型")
+        if available_levels:
+            best_level = min(available_levels)
+            if best_level not in levels_in_bank:
+                issues.append(
+                    f"存在 source_level={best_level} 的公开面经，但十个模拟问题没有优先采用该级别"
+                )
+        elif not legacy and any(level != 4 for level in levels_in_bank):
+            issues.append("没有可验证公开面经时，所有题目必须标为 source_level=4 的预测题")
+        if legacy:
+            warnings.append("旧版 mock_questions 已按 source_level=4 的预测题兼容处理")
+
+
 def _deduplicate_evidence(data: dict[str, Any], issues: list[str], warnings: list[str]) -> dict[str, Any]:
     output = copy.deepcopy(data)
     evidence = output.get("evidence")
@@ -849,12 +1344,21 @@ def _deduplicate_evidence(data: dict[str, Any], issues: list[str], warnings: lis
     for person in output.get("interviewers", []):
         if isinstance(person, dict):
             person["evidence_ids"] = remap_ids(person.get("evidence_ids", []))
+    for experience in output.get("interview_experiences", []):
+        if isinstance(experience, dict):
+            experience["evidence_ids"] = remap_ids(experience.get("evidence_ids", []))
+    for company in output.get("similar_companies", []):
+        if isinstance(company, dict):
+            company["evidence_ids"] = remap_ids(company.get("evidence_ids", []))
     for observation in output.get("market", {}).get("salary_observations", []):
         if isinstance(observation, dict):
             observation["evidence_ids"] = remap_ids(observation.get("evidence_ids", []))
-    for question in output.get("interview_prep", {}).get("mock_questions", []):
-        if isinstance(question, dict):
-            question["evidence_ids"] = remap_ids(question.get("evidence_ids", []))
+    prep = output.get("interview_prep", {})
+    if isinstance(prep, dict):
+        for key in ["questions", "mock_questions"]:
+            for question in prep.get(key, []):
+                if isinstance(question, dict):
+                    question["evidence_ids"] = remap_ids(question.get("evidence_ids", []))
     return output
 
 
@@ -969,52 +1473,7 @@ def validate_research(data: dict[str, Any], warnings_out: list[str] | None = Non
                 finding["confidence"] = ceiling
                 warnings.append(f"{finding_id} 可信度从 {confidence} 降为 {ceiling}，依据为实际来源类型与独立性")
 
-    interviewers = normalized_data.get("interviewers", [])
-    if not isinstance(interviewers, list):
-        issues.append("interviewers 必须是数组")
-        interviewers = []
-    for index, person in enumerate(interviewers):
-        prefix = f"interviewers[{index}]"
-        if not isinstance(person, dict):
-            issues.append(f"{prefix} 必须是对象")
-            continue
-        status = person.get("identity_status")
-        if status not in INTERVIEWER_STATUSES:
-            issues.append(f"{prefix}.identity_status 无效")
-            continue
-        match_confidence = person.get("match_confidence")
-        if match_confidence not in CONFIDENCE:
-            issues.append(f"{prefix}.match_confidence 无效")
-        matching_basis = person.get("matching_basis", [])
-        valid_basis = (
-            matching_basis
-            if isinstance(matching_basis, list)
-            and all(isinstance(item, str) for item in matching_basis)
-            else []
-        )
-        if status in {"confirmed", "probable"} and len(
-            [item for item in valid_basis if item.strip()]
-        ) < 2:
-            issues.append(f"{prefix} 身份为 {status} 时必须提供至少两个相互兼容的公开匹配属性")
-        attributes = ["career", "professional_focus", "public_hiring_signals", "possible_interview_topics"]
-        if status in {"unconfirmed", "not_found"}:
-            for field in attributes:
-                if person.get(field):
-                    issues.append(f"{prefix} 身份为 {status} 时不得归因 {field}")
-        else:
-            ids = person.get("evidence_ids", [])
-            if not isinstance(ids, list) or not ids:
-                issues.append(f"{prefix} 身份为 {status} 时必须提供公开证据")
-                ids = []
-            missing = [item_id for item_id in ids if item_id not in evidence]
-            if missing:
-                issues.append(f"{prefix} 引用不存在证据: {', '.join(missing)}")
-            eligible = _eligible_evidence(ids, evidence)
-            groups = {item.get("independence_group") for item in eligible}
-            if status == "confirmed" and len(groups) < 2:
-                issues.append(f"{prefix} 身份为 confirmed 时至少需要两个独立来源")
-            if any(source_trust(item["source_type"], item["access_status"]) == "low" for item in eligible):
-                issues.append(f"{prefix} 的身份归因不能依赖低可信员工评价或社交帖子")
+    _validate_interview_research(normalized_data, evidence, issues, warnings)
 
     market = normalized_data.get("market", {})
     if not isinstance(market, dict):
@@ -1059,32 +1518,15 @@ def validate_research(data: dict[str, Any], warnings_out: list[str] | None = Non
         if missing:
             issues.append(f"summary.{field} 引用不存在结论: {', '.join(missing)}")
 
-    prep = normalized_data.get("interview_prep")
-    if not isinstance(prep, dict):
-        issues.append("interview_prep 必须是对象")
-        prep = {}
-    if network_status in {"available", "partial"} and normalized_data.get("request", {}).get("role", {}).get("title"):
-        questions = prep.get("mock_questions", [])
-        if not isinstance(questions, list) or len(questions) != 10:
-            issues.append("可用网络状态下 interview_prep.mock_questions 必须正好有 10 个问题")
-        else:
-            for index, question in enumerate(questions):
-                if not isinstance(question, dict):
-                    issues.append(f"mock_questions[{index}] 必须是对象")
-                    continue
-                for field in ["question", "basis", "answer_outline"]:
-                    if not isinstance(question.get(field), str) or not question[field].strip():
-                        issues.append(f"mock_questions[{index}].{field} 必须是非空字符串")
-                if question.get("kind") != "prediction":
-                    issues.append(f"mock_questions[{index}].kind 必须为 prediction")
-                if not question.get("evidence_ids"):
-                    issues.append(f"mock_questions[{index}] 缺少 evidence_ids")
     if network_status in {"unavailable", "failed"}:
-        for collection_name in ["evidence", "findings", "interviewers"]:
+        for collection_name in ["evidence", "findings", "interview_experiences"]:
             if normalized_data.get(collection_name):
                 issues.append(f"网络状态为 {network_status} 时不得输出 {collection_name}")
         if observations:
             issues.append(f"网络状态为 {network_status} 时不得输出薪酬观察")
+        prep = normalized_data.get("interview_prep", {})
+        if isinstance(prep, dict) and (prep.get("questions") or prep.get("mock_questions")):
+            issues.append(f"网络状态为 {network_status} 时不得输出模拟问题")
 
     validate_assessment(normalized_data, issues)
     _validate_community_attempts(normalized_data, issues)
@@ -1141,7 +1583,7 @@ def render_report(data: dict[str, Any]) -> str:
     lines: list[str] = [
         f"# {company} · {role} 面试情报报告",
         "",
-        f"> 检索日期：{search_date}　地点：{location}　网络状态：`{network}`　报告版本：Interview Intel v{SCHEMA_VERSION}",
+        f"> 检索日期：{search_date}　地点：{location}　网络状态：`{network}`　报告版本：Interview Intel v{PRODUCT_VERSION}",
         "",
     ]
     if network in {"unavailable", "failed"}:
@@ -1159,7 +1601,7 @@ def render_report(data: dict[str, Any]) -> str:
             if request.get("quick_mode") and ((key in {"company", "reviews"} and not request.get("company", {}).get("name")) or (key in {"role", "prep"} and not request.get("role", {}).get("title"))):
                 continue
             lines.extend([f"## {title}", "", "未找到可靠公开证据。", ""])
-        lines.extend(["## 5. 来源与可信度", "", "本次未采集任何在线来源。", ""])
+        lines.extend(["## 6. 来源与可信度", "", "本次未采集任何在线来源。", ""])
         return "\n".join(lines).rstrip() + "\n"
 
     findings = data.get("findings", [])
@@ -1191,6 +1633,8 @@ def render_report(data: dict[str, Any]) -> str:
             "**主要风险**",
             "",
             summary_refs("risk_finding_ids"),
+            "",
+            f"**历史面经概况**：{_md_text(summary.get('experience_note'), '未找到可核验的公司与岗位面经。')}",
             "",
             "**最应准备的主题**",
             "",
@@ -1277,6 +1721,59 @@ def render_report(data: dict[str, Any]) -> str:
                         lines.append(f"  - 限制：{_md_text(item['limitations'])}")
             else:
                 lines.append(f"- {_md_text(market.get('benchmark_note'), '未找到可靠公开证据。')}")
+        if section_key == "experiences":
+            experiences = data.get("interview_experiences", [])
+            similar_companies = data.get("similar_companies", [])
+            lines.extend(["", "### 公开面经记录", ""])
+            if experiences:
+                for experience in experiences:
+                    level = experience.get("source_level")
+                    refs = " ".join(
+                        f"[{item}](#{item.lower()})" for item in experience.get("evidence_ids", [])
+                    )
+                    meta = [
+                        f"来源级别：{EXPERIENCE_LEVEL_LABELS.get(level, '未标注')}",
+                        f"公司：{_md_text(experience.get('company'), '未注明')}",
+                        f"岗位：{_md_text(experience.get('role'), '未注明')}",
+                    ]
+                    for field, label in [
+                        ("country", "国家"),
+                        ("city", "城市"),
+                        ("level", "职级"),
+                        ("interview_date", "面试时间"),
+                        ("published_at", "发布时间"),
+                        ("format", "形式"),
+                        ("difficulty", "作者自述难度"),
+                    ]:
+                        if experience.get(field):
+                            meta.append(f"{label}：{_md_text(experience.get(field))}")
+                    lines.append(f"- {'；'.join(meta)} {refs}")
+                    if experience.get("rounds"):
+                        rounds = experience["rounds"]
+                        if isinstance(rounds, list):
+                            lines.append(f"  - 面试轮次：{'；'.join(_md_text(item) for item in rounds)}")
+                        else:
+                            lines.append(f"  - 面试轮次：{_md_text(rounds)}")
+                    if experience.get("questions"):
+                        lines.append("  - 原帖明确提到的问题：")
+                        lines.extend(f"    - {_md_text(item)}" for item in experience["questions"])
+                    if experience.get("author_impression"):
+                        lines.append(f"  - 作者自述感受：{_md_text(experience['author_impression'])}")
+                    if experience.get("match_rationale"):
+                        lines.append(f"  - 匹配或迁移理由：{_md_text(experience['match_rationale'])}")
+                    if experience.get("limitations"):
+                        lines.append(f"  - 限制：{_md_text(experience['limitations'])}")
+            else:
+                lines.append("未找到可靠公开面经。以下模拟题只能按岗位和公开 JD 推断。")
+            if similar_companies:
+                lines.extend(["", "### 相似公司选择", ""])
+                for company in similar_companies:
+                    refs = " ".join(
+                        f"[{item}](#{item.lower()})" for item in company.get("evidence_ids", [])
+                    )
+                    lines.append(
+                        f"- {_md_text(company.get('name'))}：{_md_text(company.get('match_rationale'))} {refs}"
+                    )
         if section_key == "prep":
             prep = data.get("interview_prep", {})
             priorities = prep.get("priorities", [])
@@ -1284,18 +1781,42 @@ def render_report(data: dict[str, Any]) -> str:
                 lines.extend(["", "### 准备优先级", ""])
                 for value in priorities:
                     lines.append(f"- {_md_text(value)}")
-            lines.extend(["", "### 十个模拟问题（均为预测）", ""])
-            for index, question in enumerate(prep.get("mock_questions", []), start=1):
+            lines.extend(["", "### 十个模拟问题", ""])
+            for index, question in enumerate(prep.get("questions", prep.get("mock_questions", [])), start=1):
                 refs = " ".join(
                     f"[{item}](#{item.lower()})" for item in question.get("evidence_ids", [])
+                )
+                origin_label = QUESTION_ORIGIN_LABELS.get(
+                    question.get("origin_type"), "未标注来源"
+                )
+                category_label = QUESTION_CATEGORY_LABELS.get(
+                    question.get("category"), _md_text(question.get("category"), "未分类")
+                )
+                level = question.get("source_level", 4)
+                migration = (
+                    f"；迁移限制：{_md_text(question.get('migration_rationale'))}"
+                    if question.get("migration_rationale")
+                    else ""
                 )
                 lines.extend(
                     [
                         f"{index}. **{_md_text(question.get('question'))}**",
-                        f"   - 预测依据：{_md_text(question.get('basis'))} {refs}",
+                        f"   - 题型：{category_label}",
+                        f"   - 来源：{origin_label}（{EXPERIENCE_LEVEL_LABELS.get(level, '未标注级别')}）",
+                        f"   - 主要考察：{_join_zh(question.get('competencies', []))}",
+                        f"   - 依据：{_md_text(question.get('basis'))} {refs}{migration}",
                         f"   - 回答思路：{_md_text(question.get('answer_outline'))}",
+                        f"   - 答案结构：{_md_text(question.get('answer_structure'))}",
                     ]
                 )
+            lines.extend(
+                [
+                    "",
+                    "### 交互式模拟面试",
+                    "",
+                    "在支持对话的 Agent 中输入“开始模拟面试”。默认从本轮最相关的场景和岗位级别开始，每轮只提出一个问题，并根据回答补充追问。输入“结束面试”可生成本次表现反馈；输入“重新开始”可清空会话。",
+                ]
+            )
             candidate_fit = prep.get("candidate_fit", {})
             lines.extend(["", "### 经历匹配", ""])
             for field, label in [
@@ -1322,7 +1843,7 @@ def render_report(data: dict[str, Any]) -> str:
                     lines.extend(["", f"### {label}", "", _md_text(value)])
         lines.append("")
 
-    lines.extend(["## 5. 来源与可信度", ""])
+    lines.extend(["## 6. 来源与可信度", ""])
     evidence = data.get("evidence", [])
     if not evidence:
         lines.append("未找到可靠公开证据。")
@@ -1393,7 +1914,7 @@ def render_report(data: dict[str, Any]) -> str:
             f"- 实际尝试语言：{', '.join(research.get('languages_attempted', [])) or '未记录'}。",
             "- 匿名员工评价、单一社交媒体爆料和搜索摘要均按低可信度处理，不作为已核实事实。",
             "- 同文转载按来源血缘合并，不当作独立交叉验证。",
-            "- 本报告中的模拟问题属于预测，需根据岗位实际要求判断。",
+            "- 每道模拟题都标注历史原题、相近岗位参考、相似公司参考或 AI 预测级别；不得把较低级别题目冒充本公司原题。",
             "",
         ]
     )

@@ -40,6 +40,8 @@ build/
 research-plan.json
 research.json
 report.md
+.interview-intel/
+/interview-intel-skill.zip
 
 # QA raw research and evidence are local-only until separately reviewed
 qa/

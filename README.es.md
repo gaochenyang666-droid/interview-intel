@@ -1,18 +1,16 @@
 # Interview Intel
 
-**Investigación global para preparar entrevistas con IA y fuentes verificables.**
+**Investigación de empresas, inteligencia de entrevistas y práctica conversacional para agentes de IA, con fuentes verificables.**
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [Español](README.es.md) · [Русский](README.ru.md)
 
-[![Pruebas](https://github.com/gaochenyang666-droid/interview-intel/actions/workflows/test.yml/badge.svg)](https://github.com/gaochenyang666-droid/interview-intel/actions/workflows/test.yml) · [Versión beta](https://github.com/gaochenyang666-droid/interview-intel/releases/tag/v0.1.0-beta.1) · [Licencia MIT](LICENSE)
+[![Pruebas](https://github.com/gaochenyang666-droid/interview-intel/actions/workflows/test.yml/badge.svg)](https://github.com/gaochenyang666-droid/interview-intel/actions/workflows/test.yml) · [Versiones](https://github.com/gaochenyang666-droid/interview-intel/releases) · [Licencia MIT](LICENSE)
 
-**Interview Intel** es una habilidad instalable para agentes de IA (Agent Skill) que investiga empresas, puestos de trabajo, señales salariales, opiniones laborales, procesos de selección . El resultado es un **informe en chino simplificado**, con enlaces a las fuentes, niveles de confianza y limitaciones explícitas.
+Interview Intel es una Agent Skill instalable. Investiga empresas y puestos, recopila opiniones laborales públicas y experiencias de entrevista, genera diez preguntas con etiquetas de origen y ofrece una entrevista simulada con estado local. El informe final se escribe en chino simplificado e incluye enlaces originales, fechas, confianza y lagunas de información.
 
-> **Estado: beta pública v0.1.0-beta.1.** El agente anfitrión realiza las búsquedas y consulta las páginas públicas. Los scripts de Python generan planes, validan pruebas y redactan el informe; **no rastrean sitios web por sí solos**.
+> Versión de desarrollo: `0.2.0-beta.1`. El agente anfitrión realiza las búsquedas y abre páginas públicas. Las herramientas Python planifican, validan, generan preguntas, conservan el estado y crean el informe. No rastrean la web por sí solas.
 
-## Inicio rápido: solo tres datos
-
-Escribe estos cuatro campos en cualquier agente compatible:
+## Inicio rápido
 
 ```text
 País: China
@@ -20,35 +18,63 @@ Empresa: ByteDance
 Puesto: Product Operations
 ```
 
-**Escribe `0` cuando desconozcas un dato.** País `0`: búsqueda global; empresa `0`: investigación general del puesto; puesto `0`: investigación de la empresa. Es suficiente indicar empresa o puesto. No se requiere CV ni información personal. La puntuación numérica está desactivada por defecto.
+Usa `0` para un campo desconocido. Debes indicar al menos empresa o puesto. No se requiere CV, enlace de empleo ni datos de entrevistadores. La puntuación numérica de la empresa está desactivada por defecto.
 
 ```bash
 python3 scripts/interview_intel.py quick "China/ByteDance/Product Operations" --output request.json
+python3 scripts/interview_intel.py plan request.json --format json --output research-plan.json
 ```
 
-El comando solo genera los datos de entrada. Después, el agente realiza la investigación web.
+## Capacidades
 
-## Funcionalidades
+- Investiga información oficial de la empresa, requisitos del puesto, señales salariales y contexto reciente.
+- Consulta al menos dos plataformas públicas e independientes cuando se indica una empresa.
+- Conserva experiencias positivas, negativas y mixtas con fecha, enlace y limitaciones.
+- Busca experiencias de entrevista en inglés y en el idioma principal del país.
+- Prioriza misma empresa y puesto, puesto relacionado, empresa comparable y predicción basada en el puesto.
+- Genera diez preguntas adaptadas al tipo de puesto y marca su procedencia.
+- Ofrece entrevistas de selección, profesionales, técnicas, casos de negocio y rondas finales.
+- Formula una pregunta cada vez, aplica seguimientos contextuales y ajusta la dificultad.
 
-| Necesidad | Qué analiza |
-| --- | --- |
-| Evaluar una empresa | Información oficial, actividad empresarial, contratación, experiencias laborales y discrepancias entre fuentes. |
-| Entender una oferta | Descripción del puesto, responsabilidades, requisitos, señales salariales y diferencias por ubicación o nivel. |
-| Investigar el ambiente laboral | Opiniones de empleados y comunidades públicas, con fechas, sesgos y procedencia. |
-| Preparar una entrevista con una persona concreta | Trayectoria profesional verificada, publicaciones y criterios de contratación expresados públicamente, cuando existan. |
-| Entrenar la entrevista | Estrategia personalizada, preguntas para el entrevistador y **10 preguntas de práctica identificadas como predicciones**. |
+No investiga entrevistadores concretos ni evita controles de acceso. Los fragmentos de búsqueda no se consideran pruebas verificadas.
 
-La búsqueda comienza en **inglés** y continúa en el **idioma local** del país de interés. El catálogo incluye fuentes potenciales como LinkedIn, Indeed, Glassdoor, Reddit, Blind, 牛客, 脉脉, OpenWork, JobPlanet, Naukri y SEEK. La inclusión de una plataforma no garantiza que sus contenidos sean accesibles.
+## Niveles de evidencia
 
-## Instalación en distintos asistentes de IA
+| Nivel | Fuente | Etiqueta |
+| --- | --- | --- |
+| 1 | Misma empresa y puesto | `historical_exact` |
+| 2 | Misma empresa y puesto relacionado | `historical_similar_role` |
+| 3 | Empresa comparable y mismo puesto | `similar_company` |
+| 4 | Predicción basada en puesto y JD | `prediction` |
 
-Interview Intel utiliza el formato abierto **Agent Skills (`SKILL.md`)**. Puede integrarse en varios agentes compatibles. Elegir un modelo GPT, Claude o Gemini por sí solo no instala la habilidad.
+Las etiquetas históricas requieren una pregunta textual incluida en la experiencia pública enlazada. Las preguntas de empresas comparables necesitan una justificación de transferencia. Consulta [la guía de práctica](references/interview-practice.md).
 
-**Requisitos:** Git, Python 3.10 o posterior y un agente con acceso a búsqueda web o navegador y permiso para ejecutar Python localmente. Las utilidades no requieren paquetes Python externos ni una API de pago.
+## Generación y práctica
 
-### Opción A: instalación compartida
+```bash
+python3 scripts/interview_intel.py generate-questions research.json \
+  --output research-labelled.json
+python3 scripts/interview_intel.py validate research-labelled.json
+python3 scripts/interview_intel.py render research-labelled.json --output report.md
 
-En macOS y Linux, Codex, Gemini CLI, Cursor, GitHub Copilot, OpenCode y versiones compatibles de Windsurf / Devin Desktop reconocen **`~/.agents/skills/`**:
+python3 scripts/interview_simulator.py start research-labelled.json \
+  --state .interview-intel/session.json
+python3 scripts/interview_simulator.py answer --answer "Mi respuesta"
+python3 scripts/interview_simulator.py skip
+python3 scripts/interview_simulator.py finish
+```
+
+En conversación, usa `开始模拟面试` para comenzar, `结束面试` para recibir comentarios y `重新开始` para reiniciar.
+
+## Informe
+
+El informe contiene un resumen y seis secciones: empresa, opiniones laborales, puesto, experiencias históricas de entrevista, predicción y preparación, y fuentes y confianza.
+
+[Entrada](references/input-schema.md) · [Evidencia](references/evidence-schema.md) · [Formato del informe](references/report-spec.md)
+
+## Instalación
+
+Requisitos: Git, Python 3.10 o posterior y un agente con acceso web público y ejecución local de Python.
 
 ```bash
 git clone https://github.com/gaochenyang666-droid/interview-intel.git
@@ -56,191 +82,46 @@ mkdir -p ~/.agents/skills
 cp -R interview-intel ~/.agents/skills/interview-intel
 ```
 
-Abre una sesión nueva o actualiza las habilidades. **Claude Code** utiliza su propia carpeta:
+Claude Code:
 
 ```bash
 mkdir -p ~/.claude/skills
 cp -R interview-intel ~/.claude/skills/interview-intel
 ```
 
-También puedes instalarla en las rutas específicas de cada producto:
-
-| Cliente | Carpeta personal | Carpeta de proyecto |
-| --- | --- | --- |
-| **OpenAI Codex** | `~/.agents/skills/` | `.agents/skills/` |
-| **Claude Code** | `~/.claude/skills/` | `.claude/skills/` |
-| **Google Gemini CLI** | `~/.gemini/skills/` o `~/.agents/skills/` | `.gemini/skills/` o `.agents/skills/` |
-| **Cursor** | `~/.cursor/skills/` o `~/.agents/skills/` | `.cursor/skills/` o `.agents/skills/` |
-| **GitHub Copilot (CLI / VS Code Agent)** | `~/.copilot/skills/` o `~/.agents/skills/` | `.github/skills/` o `.agents/skills/` |
-| **OpenCode** | `~/.config/opencode/skills/` o `~/.agents/skills/` | `.opencode/skills/` o `.agents/skills/` |
-| **Windsurf / Devin Desktop** | `~/.codeium/windsurf/skills/` o `~/.agents/skills/` | `.windsurf/skills/` o `.agents/skills/` |
-
-Estas son carpetas **contenedoras**: copia el directorio completo en `<ruta>/interview-intel/`, incluyendo `SKILL.md`, `scripts/` y `references/`. En Windows, usa las rutas y comandos equivalentes.
-
-### Opción B: instalador de Gemini CLI
-
-```bash
-gemini skills install https://github.com/gaochenyang666-droid/interview-intel.git
-gemini skills list
-```
-
-En Gemini CLI, `/skills list` muestra las habilidades y `/skills reload` vuelve a detectarlas. Acepta la activación cuando se te solicite.
-
-### Agentes de IA desarrollados en China
-
-Estos seis clientes admiten Skills con `SKILL.md`: **Qwen Code, Kimi Code CLI, TRAE China, Qoder, Tencent CodeBuddy Code y Zhipu ZCode**. Después de clonar el repositorio, copia toda la carpeta con sus scripts y referencias:
-
-```bash
-# Qwen Code
-mkdir -p ~/.qwen/skills && cp -R interview-intel ~/.qwen/skills/interview-intel
-# Kimi Code CLI
-mkdir -p ~/.kimi-code/skills && cp -R interview-intel ~/.kimi-code/skills/interview-intel
-# TRAE (China)
-mkdir -p ~/.trae-cn/skills && cp -R interview-intel ~/.trae-cn/skills/interview-intel
-# Tencent CodeBuddy Code
-mkdir -p ~/.codebuddy/skills && cp -R interview-intel ~/.codebuddy/skills/interview-intel
-# Zhipu ZCode
-mkdir -p ~/.zcode/skills && cp -R interview-intel ~/.zcode/skills/interview-intel
-```
-
-**Qoder:** Reconoce `~/.agents/skills/interview-intel/`. También puedes importar un ZIP revisado desde **Extensions → Skills → Add Skills → Upload Skill**.
-
-**Invocación:** Qwen Code: `/interview-intel` o `/skills`; Kimi Code CLI: `/skill:interview-intel`; CodeBuddy Code: `/skills`; ZCode: **Settings → Skills → Refresh**; TRAE: pídeselo al agente; Qoder: selección mediante `/`.
-
-**Otras rutas:** Qwen Code y Kimi Code CLI leen `~/.agents/skills/` y las carpetas de proyecto `.qwen/skills/` y `.kimi-code/skills/`; TRAE usa `.trae/skills/` (el proyecto `.agents/skills/` requiere activación en ajustes); CodeBuddy Code usa `.codebuddy/skills/`.
-
-**Modelos y clientes:** DeepSeek, Doubao, GLM y MiniMax pueden ejecutarse mediante agentes compatibles. El modelo o una aplicación de chat convencional no garantiza soporte para `SKILL.md`. Se necesitan búsqueda web y ejecución de Python.
-
-Documentación oficial: [Qwen Code](https://qwenlm.github.io/qwen-code-docs/en/users/features/skills/) · [Kimi Code CLI](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/skills.html) · [TRAE](https://docs.trae.cn/ide_skills?lang=zh) · [Qoder](https://docs.qoder.com/qoder/skills) · [CodeBuddy Code](https://www.codebuddy.cn/docs/cli/skills) · [ZCode](https://zcode.z.ai/en/docs/skill)
-
-### ChatGPT y Claude en el navegador
-
-- **ChatGPT Skills:** Si tu cuenta o espacio de trabajo reúne los requisitos, ve a **Plugins → Skills → Create → Upload from your computer** y sube un paquete revisado. Esta opción es independiente de Codex. [Documentación oficial](https://help.openai.com/en/articles/20001066-skills-in-chatgpt).
-- **Claude.ai:** Las cuentas compatibles permiten importar habilidades personalizadas desde la configuración de Skills, normalmente mediante un archivo ZIP. El acceso web y la ejecución de código dependen del entorno. [Documentación oficial](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview).
-
-Para ejecutar todo el flujo de Interview Intel se necesitan **búsquedas reales y validación con Python**. En una interfaz sin ejecución de archivos, solo puede reutilizarse la metodología, sin afirmar que se ejecutaron las comprobaciones.
-
-### Cómo invocar la habilidad
-
-| Cliente | Ejemplo |
-| --- | --- |
-| Codex | `Use $interview-intel to research ...` |
-| Claude Code | `/interview-intel` o una petición en lenguaje natural |
-| Gemini CLI | Pide usar Interview Intel; compruébalo con `/skills list` |
-| Cursor / GitHub Copilot / OpenCode | En modo agente: `Usa la habilidad Interview Intel para investigar ...` |
-| Windsurf / Devin Desktop | Indícalo en Cascade; `@interview-intel` si está disponible |
-| ChatGPT / Claude web | Selecciona la habilidad personalizada instalada, si está disponible |
-
-Ejemplo independiente del cliente:
-
-```text
-Usa la habilidad Interview Intel para preparar un informe con fuentes.
-Empresa: Microsoft
-Puesto: Software Engineer II
-Lugar: Redmond, Estados Unidos
-Enlace a la oferta: [opcional]
-Experiencia: C#, sistemas distribuidos, Azure
-Prioridades: entrevista técnica, equipo, salario
-```
-
-**Basta con indicar empresa o puesto.** Actualmente, el informe final se genera en **chino simplificado**.
-
-**Documentación de plataformas:** [Codex](https://learn.chatgpt.com/docs/build-skills) · [Claude Code](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) · [Gemini CLI](https://geminicli.com/docs/cli/skills/) · [Cursor](https://cursor.com/docs/skills) · [Copilot](https://docs.github.com/en/copilot/concepts/customizations/agent-skills) · [OpenCode](https://opencode.ai/docs/skills) · [Windsurf / Devin Desktop](https://docs.devinai.cn/desktop/cascade/skills)
-
-## Ejemplos de uso
-
-**Buscar información local en otro idioma:**
-
-```text
-Usa la habilidad Interview Intel para investigar Toyota y el puesto Product Manager en Japón.
-Consulta primero las ofertas oficiales y después las comunidades japonesas.
-Entrega un informe con fuentes, limitaciones y preguntas de práctica.
-```
-
-**Contrastar opiniones contradictorias:**
-
-```text
-Usa la habilidad Interview Intel para [empresa], [puesto] y [ciudad].
-Compara la información oficial con opiniones laborales recientes y accesibles.
-Separa hechos, experiencias anónimas, inferencias y lagunas de información.
-```
-
-## ¿Qué contiene el informe?
-
-El informe se genera actualmente en **Markdown y chino simplificado**. Incluye un resumen ejecutivo y cinco apartados:
-
-1. Presentación y evaluación de la empresa.
-2. Opiniones de empleados y redes sociales.
-3. Análisis del puesto, remuneración y riesgos.
-4. Predicciones de entrevista y plan de preparación.
-5. Fuentes originales, confianza y datos pendientes de verificar.
-
-Los hallazgos distinguen hechos verificados, declaraciones de primera mano, opiniones de terceros, inferencias, predicciones y ausencia de pruebas. Se conservan los enlaces originales y las fechas disponibles.
-
-**[Ver informe de ejemplo: Microsoft Software Engineer II](examples/report-us-software-engineer.md)** · [Esquema de entrada](references/input-schema.md) · [Reglas de evidencia](references/evidence-schema.md) · [Formato del informe](references/report-spec.md)
-
-## Herramientas de línea de comandos
-
-La CLI sirve para planificar, validar y generar el informe a partir de evidencias ya recopiladas. **No realiza búsquedas en Internet automáticamente**.
-
-```bash
-cd interview-intel
-python3 scripts/interview_intel.py --help
-
-# Generar un plan de investigación
-python3 scripts/interview_intel.py plan examples/input-us-software-engineer.json --format markdown
-
-# Crear el documento de evidencias para que el agente lo complete
-python3 scripts/interview_intel.py scaffold examples/input-us-software-engineer.json --output research.json
-
-# Validar las evidencias
-python3 scripts/interview_intel.py validate research.json
-
-# Generar el informe en chino simplificado
-python3 scripts/interview_intel.py render research.json --output report.md
-
-# Consultar fuentes candidatas para Japón
-python3 scripts/interview_intel.py catalog --country JP
-```
-
-También puedes validar el [archivo de investigación de ejemplo](examples/research-us-software-engineer.json) sin efectuar búsquedas.
-
-## Reseñas públicas y experiencias laborales en redes sociales
-
-Cuando se indica una empresa, el agente **busca publicaciones originales y accesibles en al menos dos plataformas externas**, preferiblemente tres. Emplea búsquedas específicas por sitio y el idioma local. En China se priorizan Zhihu, Maimai, Xiaohongshu, Nowcoder y Weibo; en otros países, las comunidades pertinentes.
-
-El informe detalla **qué plataformas se intentaron consultar**, incluye enlaces originales, fecha si está disponible, y resume experiencias positivas y negativas que realmente pudieron leerse. Las barreras de acceso y los límites de las publicaciones anónimas quedan explícitos. Una publicación pública no confirma por sí sola que su autor haya trabajado en la empresa.
-
-**La puntuación numérica está desactivada de forma predeterminada.** Se puede activar expresamente mediante la [rúbrica opcional](references/scoring-rubric.md).
-
-## Directorios de Skills y extensiones
-
-El repositorio incluye manifiestos para **Claude Code, Gemini CLI y Cursor**, además del formato universal `SKILL.md`. La instalación desde GitHub no implica aprobación en una tienda oficial.
+También puede instalarse con:
 
 ```bash
 npx skills add gaochenyang666-droid/interview-intel --skill interview-intel
-gemini extensions install https://github.com/gaochenyang666-droid/interview-intel
+gemini skills install https://github.com/gaochenyang666-droid/interview-intel.git
 ```
 
-En Claude Code ejecuta `/plugin marketplace add gaochenyang666-droid/interview-intel` y después `/plugin install interview-intel@interview-intel-marketplace`. Consulta los enlaces y estados de publicación en [PUBLISHING.md](PUBLISHING.md).
+Instala el directorio completo, incluidos `SKILL.md`, `scripts/` y `references/`. Consulta [PUBLISHING.md](PUBLISHING.md) para más clientes.
 
-## Alcance, fiabilidad y privacidad
+## Ejemplo
 
-- El [catálogo de fuentes](references/source-catalog.json) y los [perfiles de país](references/country-profiles.json) orientan la investigación internacional. La cobertura real depende de los resultados accesibles.
-- Los fragmentos de buscadores, las páginas bloqueadas y las publicaciones duplicadas no se convierten en pruebas independientes.
-- El nombre de una persona no basta para identificarla; se requieren atributos profesionales compatibles y fuentes independientes.
-- No se eluden inicios de sesión, CAPTCHAs, muros de pago ni controles de acceso. No se recopilan direcciones privadas, contactos personales ni datos íntimos.
-- Si no hay herramientas de búsqueda, se entrega únicamente un plan y se explican las limitaciones; no se inventan hallazgos.
+```text
+Usa Interview Intel para Microsoft, Software Engineer II, Redmond.
+Busca opiniones públicas recientes y experiencias de entrevista.
+Genera diez preguntas con fuentes y ofrece una entrevista técnica simulada.
+```
 
-Consulta la [metodología](references/research-playbook.md), las [reglas de fuentes](references/source-routing.md) y el [historial de cambios](CHANGELOG.md).
+## Límites y privacidad
 
-## Pruebas y contribuciones
+- La cobertura depende de las capacidades de búsqueda del agente.
+- No se evitan inicios de sesión, CAPTCHA ni muros de pago.
+- Las opiniones anónimas son opiniones y no pruebas de empleo.
+- Las publicaciones duplicadas comparten una sola procedencia.
+- La falta de pruebas se informa como laguna.
+- No se recopilan CV, contactos privados, direcciones ni datos íntimos.
+- Sin acceso web se entrega un plan, sin conclusiones inventadas.
+
+## Pruebas
 
 ```bash
-python3 -m unittest discover -s tests -v
-python3 scripts/interview_intel.py validate examples/research-us-software-engineer.json
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v
+python3 scripts/interview_intel.py validate \
+  examples/research-us-software-engineer.json
 ```
-
-Puedes comunicar problemas o sugerencias en [Issues](https://github.com/gaochenyang666-droid/interview-intel/issues). Evita incluir currículos reales, datos privados o contenido de acceso restringido. Lee [CONTRIBUTING.md](CONTRIBUTING.md).
 
 **Licencia:** [MIT](LICENSE).

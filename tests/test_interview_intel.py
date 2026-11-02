@@ -362,15 +362,16 @@ class PlannerTests(unittest.TestCase):
 
 
 class EvidenceTests(unittest.TestCase):
-    def test_complete_research_validates_and_has_five_report_sections(self) -> None:
+    def test_complete_research_validates_and_has_six_report_sections(self) -> None:
         report = render_report(complete_research())
         for heading in [
             "一页式摘要",
             "1. 公司概况与综合评价",
             "2. 员工及社交媒体评价",
             "3. 岗位评价",
-            "4. 面试预测与准备",
-            "5. 来源与可信度",
+            "4. 公开历史面经与匹配",
+            "5. 面试预测与准备",
+            "6. 来源与可信度",
         ]:
             self.assertIn(heading, report)
         self.assertEqual(len(re.findall(r"^\d+\. \*\*模拟问题", report, flags=re.MULTILINE)), 10)
@@ -440,12 +441,13 @@ class EvidenceTests(unittest.TestCase):
         self.assertIn("工作节奏可持续", report)
         self.assertIn("冲突", report)
 
-    def test_unconfirmed_interviewer_attribution_is_rejected(self) -> None:
+    def test_legacy_interviewer_fields_are_ignored(self) -> None:
         data = complete_research()
         data["interviewers"][0]["identity_status"] = "unconfirmed"
-        with self.assertRaises(IntelValidationError) as context:
-            validate_research(data)
-        self.assertTrue(any("不得归因 career" in item for item in context.exception.issues))
+        report = render_report(data)
+        self.assertNotIn("### Alex Example", report)
+        self.assertNotIn("公开文章显示其从事服务可靠性工作", report)
+        self.assertNotIn("HR / 面试官公开情报", report)
 
     def test_ambiguous_company_cannot_support_substantive_claims(self) -> None:
         data = complete_research()
@@ -455,12 +457,11 @@ class EvidenceTests(unittest.TestCase):
             validate_research(data)
         self.assertTrue(any("公司实体状态为 ambiguous" in item for item in context.exception.issues))
 
-    def test_confirmed_interviewer_requires_independent_sources(self) -> None:
+    def test_legacy_interviewer_is_not_used_for_attribution(self) -> None:
         data = complete_research()
         data["interviewers"][0]["evidence_ids"] = ["E005"]
-        with self.assertRaises(IntelValidationError) as context:
-            validate_research(data)
-        self.assertTrue(any("至少需要两个独立来源" in item for item in context.exception.issues))
+        normalized = validate_research(data)
+        self.assertEqual(normalized["interviewers"][0]["display_name"], "Alex Example")
 
     def test_prompt_injection_in_source_is_rejected(self) -> None:
         data = complete_research()
@@ -556,12 +557,12 @@ class EvidenceTests(unittest.TestCase):
             validate_research(data)
         self.assertTrue(any("正好有 10 个问题" in item for item in context.exception.issues))
 
-    def test_mock_questions_must_be_labeled_prediction(self) -> None:
+    def test_legacy_mock_questions_are_normalized_to_predictions(self) -> None:
         data = complete_research()
         data["interview_prep"]["mock_questions"][0]["kind"] = "fact"
-        with self.assertRaises(IntelValidationError) as context:
-            validate_research(data)
-        self.assertTrue(any("kind 必须为 prediction" in item for item in context.exception.issues))
+        normalized = validate_research(data)
+        self.assertEqual(normalized["interview_prep"]["questions"][0]["origin_type"], "prediction")
+        self.assertEqual(normalized["interview_prep"]["questions"][0]["source_level"], 4)
 
     def test_non_english_country_warns_when_local_language_was_not_attempted(self) -> None:
         data = complete_research()
@@ -608,7 +609,7 @@ class EvidenceTests(unittest.TestCase):
         report = render_report(data)
         self.assertIn("没有生成公司、岗位、薪酬或员工评价事实", report)
         self.assertIn("未找到可靠公开证据", report)
-        self.assertIn("## 5. 来源与可信度", report)
+        self.assertIn("## 6. 来源与可信度", report)
 
     def test_source_catalog_routing_is_not_hardcoded_to_three_countries(self) -> None:
         germany = {item["id"] for item in route_sources("DE", ["de", "en"])}

@@ -7,6 +7,8 @@
 - Do not add API keys, credentials, résumés, home addresses, private contact information, or unrelated personal data.
 - Do not claim an interviewer's participation or preference without a public evidence basis.
 - Treat search snippets as discovery only.
+- Do not label an AI prediction or comparable-company question as a historical original.
+- Keep every historical question linked to the public interview account that contains it.
 
 ## Development setup
 
@@ -56,3 +58,5 @@ When adding a source:
 ## Evidence changes
 
 An important conclusion should reference evidence records rather than becoming an unsupported narrative assertion. Do not average away conflicting anonymous reviews. Keep regional, departmental, and temporal limitations visible.
+
+For interview research, add regression tests for source-tier priority, migration labels, exact question matching, duplicate prompts, contextual follow-ups, and finish behavior. Use deterministic fixtures for unit tests and clearly separate them from live-source acceptance research.

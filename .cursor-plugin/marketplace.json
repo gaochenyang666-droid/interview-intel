@@ -10,7 +10,7 @@
     {
       "name": "interview-intel",
       "source": "./",
-      "description": "Evidence-led global employer and job interview research. Checks official sources and accessible original employee/community posts, then produces a source-cited Chinese report. Three inputs: country, company, role."
+      "description": "Evidence-led global employer and job interview research with source-labelled historical questions and interactive mock practice. Uses three inputs: country, company, role."
     }
   ]
 }

@@ -11,6 +11,7 @@ The CLI accepts UTF-8 JSON. The standard chat and CLI interface uses **country /
   },
   "role": {
     "title": "Senior Product Manager",
+    "family": "product",
     "url": "https://example.com/jobs/123",
     "description": "Paste a public JD only. Remove candidate data.",
     "level": "Senior"
@@ -25,6 +26,7 @@ The CLI accepts UTF-8 JSON. The standard chat and CLI interface uses **country /
     "preferences": ["hybrid work", "learning opportunities"]
   },
   "focus": ["organization health", "system design", "salary negotiation"],
+  "similar_companies": ["Comparable Corp"],
   "research": {
     "max_queries": 18,
     "recency_months": 18,
@@ -59,6 +61,8 @@ For partial requests: company `0` skips company conclusions; role `0` skips job 
 - `location.country` accepts a two-letter ISO-style code, English country name, or common Chinese name. Unknown values produce a warning and fall back to global English research.
 - `research.languages` adds languages to the country route. The planner still runs English first.
 - `candidate.summary` must contain role-relevant information only. The tool does not log or persist it separately.
+- `role.family` is an optional planning hint such as `engineering`, `data`, `product`, `operations`, or `management`.
+- `similar_companies` is optional. New research should still record a verified comparability rationale in `similar_companies` during evidence collection.
 - Interviewer names are not requested or researched. Legacy input fields are ignored by the active planning workflow.
 
 ## Research plan output
@@ -70,6 +74,7 @@ For partial requests: company `0` skips company conclusions; role `0` skips job 
 - ordered query tasks with language, category, priority, and candidate domains;
 - a ranked source shortlist;
 - network state and capability limits;
+- interview source tiers and a role-sensitive question mix;
 - the required research JSON skeleton.
 
 - `candidate.preferences` is optional and is used only for the contextual preference-match score. If the user does not disclose preferences, this factor remains **unscored**. See [scoring-rubric.md](scoring-rubric.md).
