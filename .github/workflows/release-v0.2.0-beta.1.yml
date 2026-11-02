@@ -34,7 +34,7 @@ jobs:
 
       - name: Extract release notes from changelog
         run: |
-          awk '/^## \\[0\\.2\\.0-beta\\.1\\]/{capture=1;next} /^## \\[/{if(capture)exit} capture{print}' CHANGELOG.md > release-notes.md
+          awk '/^## \[0\.2\.0-beta\.1\]/{capture=1;next} /^## \[/{if(capture)exit} capture{print}' CHANGELOG.md > release-notes.md
           test -s release-notes.md
 
       - name: Publish GitHub prerelease
